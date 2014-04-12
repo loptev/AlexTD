@@ -1,0 +1,31 @@
+  <nav>
+    <div class="Main_Header">
+      <%= link_to "", root_path, class: "headerLink" %>
+      <ul class="button-group radius" style="float:right; padding: 3px 15px 0 0">
+      <% if @is_logged_in %>
+        <li style="width:100px"><%= link_to @current_user.username, user_path(@current_user), class: "button" %></li>
+        <li style="width:100px"><%= link_to :Logout , :logout, class: "button" %></li> 
+        <li style="width:125px"><%= link_to :Scoreboard , :scoreboard, class: "button"%></li>  
+      <%else%>
+        <li style="width:100px"><%= link_to :Signup , :signup, class: "button"%></li>
+        <li style="width:100px"><%= link_to :Login , :login, class: "button"%></li>  
+        <li style="width:125px"><%= link_to :Scoreboard , :scoreboard, class: "button"%></li>  
+      <% end %>
+    </ul>
+    </div>
+    <% if flash[:color]== "valid" %>
+    <div class="valid_notice">
+      <p><%= flash[:notice]%></p>
+    </div>
+    <% elsif flash[:color]== "invalid"%>
+    <div class="invalid_notice">
+      <p><%=flash[:notice]%></p>
+    </div>
+    <% else %>
+    <div class="notice">
+      <p><%=flash[:notice]%></p>
+    </div>
+    <% end %>
+  </nav>
+  <div class="row">
+  </div>

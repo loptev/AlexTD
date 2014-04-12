@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  speed: 1
+  posx: 1
+  posy: 1
+  direction: MyString
+  isHit: false
+  special: MyString
+
+two:
+  speed: 1
+  posx: 1
+  posy: 1
+  direction: MyString
+  isHit: false
+  special: MyString

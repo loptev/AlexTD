@@ -1,0 +1,17 @@
+<% content_for :title, "Tower Defense | Scoreboard" %>
+<div class="row">
+	<div class="large-12 columns">
+		<h2 style="text-align:center">High Scores</h2>
+		<table style="margin-bottom:0">
+			<tr>
+				<th style = "width:635px">Username</th>
+				<th style = "width:635px">High Score</th>
+			</tr>
+		</table>
+		<table id="scoreboard">
+			<% @highscores.each do |user| %>
+			<tr><td style = "width:635px; text-align:center; border-right: 1px solid black;"><%= user.username %></td><td style = "width:635px; text-align:center;"><%= user.highscore %></td></tr>
+			<% end %>
+		</table>
+	</div>
+</div>

@@ -1,0 +1,15 @@
+<div class="row">
+<h1><%= @user.username %></h1>
+<% if @user.highscore.present? %>
+	<p>Highscore: <%= @user.highscore %></p>
+<% else %>
+	<p>Get a highscore already!</p>
+	<%= link_to "Play Now!", root_path %>
+<% end %>
+<% if @user.email.present? %>
+	<p>Email: <%= @user.email %></p>
+<% else %>
+	<p>Email: <%= link_to "Add an Email", edit_user_path(@user) %></p>
+<% end %>
+<%= link_to "Edit Profile", edit_user_path(@user) %>
+</div>
