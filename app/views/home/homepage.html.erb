@@ -21,238 +21,218 @@
 		</table>
 	</div>
 </div>
-<%= javascript_include_tag "phaser.min" %>
+<%= javascript_include_tag "phaser.min.js" %>
 
 <script type="text/javascript">
-var Game = {}
-	Game.Titlescreen = function(game){
+	var level_data, current_level, detectors, paths, enemies, enemystack = [], towers, counter = 100;
+	var Game = {};
+
+	Game.Preload = function(game){};
+	Game.Preload.prototype = {
+		preload: function() {
+			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
+			game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
+			game.load.image('lvlselectback', '<%= asset_path('levelselect.png') %>');
+			game.load.image('detector', '<%= asset_path('detector.png') %>');
+			game.load.image('background', '<%= asset_path('grass1.jpg') %>');
+			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
+			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
+			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
+			game.load.image('tower1', '<%= asset_path('tower.png') %>');
+			game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
+			game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
+			game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
+			game.load.image('corner4', '<%= asset_path('corner_path_4.png') %>');
+			game.load.image('horizontal', '<%= asset_path('horizontal_path.png') %>');
+			game.load.image('vertical', '<%= asset_path('vertical_path.png') %>');
+		},
+		create: function() {
+			console.log("Preload State Started");
+			this.game.state.start('Titlescreen');
+		},
+	}
+	Game.Titlescreen = function(game) {};
+	Game.Titlescreen.prototype = {
+		create: function() {
+			console.log("Titlescreen State Started");
+			game.add.sprite(0, 0, 'titleback');
+			game.add.button(game.world.centerX - 79, game.world.centerY - 90, 'playbutton', function() { 
+				current_level = 1;
+				that.game.state.start('Actualgame'); 
+			}, this, 0, 1, 2);
+		},
+	};
+	Game.Lvlselect = function(game) {};
+	Game.Lvlselect.prototype = {
+		create: function() {
+			console.log("Lvlselect State Started");
+			game.add.sprite(0, 0, 'lvlselectback');
+		},
+	};	
+	Game.Actualgame = function(game) {
 		this.level;
 	};
-	Game.Lvlselect = function(game){
-		this.level;
+	Game.Actualgame.prototype = {
+		init: function (level, a, b, c) {
+			console.log("Actualgame State Started");
+			console.log(level, a, b, c);
+			this.level = level;
+		},
+		create: function() {
+			var background = game.add.sprite(0, 0, 'background');
+			paths = game.add.group();
+			detectors = game.add.group();
+			enemies = game.add.group();
+			towers = game.add.group();
+			console.log("this.level:" + this.level); // [object Object]
+			setuplvl(this.level);
+		},
+		update: function() {
+			game.physics.overlap(enemies, detectors, isEnemyInCenter, null, this);
+			if (enemystack.length > 0 && counter >= 100) {
+				var enemy = enemystack.shift();
+				enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
+				enemy.body.velocity.x = enemy.speed;
+				enemy.direction = level_data.startdirection;
+				console.log("created enemy");
+				counter = 0;
+			}
+			counter++;
+		}
 	};
-	Game.Actualgame = function(game){
-		this.level;
-	};
-Game.Titlescreen.prototype = {
-	init: function(level){
-		this.level = level;
-	},
-	preload: function(){
-		//All preload data for current state goes here... for example:
-		game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
-		game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
-	},
-	create: function(){
-		//New elements created when entering this state go here ... for example:
-		game.add.sprite(0, 0, 'titleback');
-		game.add.button(game.width/2 - 79, game.height/2 - 90, 'playbutton', function() {
-			this.game.state.start('Actualgame', true, false, this.level);
-		}, this, 0, 1, 2);
-	},
-	update: function(){
-		//The game loop for this particular state goes here... for example :
+	function setuplvl(lvl) {
+		$.getJSON('<%= asset_path('levels.json') %>', function(data) {
+			level_data = data[lvl];
+			drawpaths();
+			for (var i = 0; i < level_data.enemies.length; i++) {
+				enemystack[i] = level_data.enemies[i];
+			}
+		});
 	}
-};
-Game.Lvlselect.prototype = {
-	init: function(level){
-		this.level = level;
-	},
-	preload: function(){
-		//All preload data for current state goes here... for example:
-		game.load.image('lvlselectback', '<%= asset_path('levelselect.png') %>');
-	},
-	create: function(){
-		game.add.sprite(0, 0, 'lvlselectback');
-		//New elements created when entering this state go here ... for example:
-	},
-	update: function(){
-		//The game loop for this particular state goes here... for example :
-	}
-};
-Game.Actualgame.prototype = {
-	init: function (level) {
-		console.log("got to init" + level);
-		this.level = level;
-	},
-	preload: function(){
-		//All preload data for current state goes here... for example:
-		game.load.image('detector', '<%= asset_path('detector.png') %>');
-		game.load.image('background', '<%= asset_path('grass1.jpg') %>');
-		game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
-		game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
-		game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
-		game.load.image('tower1', '<%= asset_path('tower.png') %>');
-		game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
-		game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
-		game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
-		game.load.image('corner4', '<%= asset_path('corner_path_4.png') %>');
-		game.load.image('horizontal', '<%= asset_path('horizontal_path.png') %>');
-		game.load.image('vertical', '<%= asset_path('vertical_path.png') %>');
-	},
-	create: function(){
-		//New elements created when entering this state go here ... for example:
-		var background = game.add.sprite(0, 0, 'background');
-		paths = game.add.group();
-		detectors = game.add.group();
-		enemies = game.add.group();
-		towers = game.add.group();
-		console.log("Actualgame:" + Game.Actualgame.level); //undefined
-		console.log("this.level:" + this.level); // [object Object]
-		setuplvl(Game.Actualgame.level);
-	},
-	update : function(){
-		//The game loop for this particular state goes here... for example :
-		game.physics.overlap(enemies, detectors, isEnemyInCenter, null, this);
-		if (enemystack.length > 0 && counter >= 100) {
-			var enemy = enemystack.shift();
-			enemy = Enemy(parseInt(leveldata.spawnlocation.x), parseInt(leveldata.spawnlocation.y), parseInt(enemy));
-			enemy.body.velocity.x = enemy.speed;
-			enemy.direction = leveldata.startdirection;
-			console.log("created enemy");
-			counter = 0;
+	function drawpaths() {
+		for (var i = 0; i<level_data.paths.length; i++) {
+			 	var path = level_data.paths[i];
+			 	Path(parseInt(path.x), parseInt(path.y), parseInt(path.type));
 		}
-		counter++;
+		
 	}
-};
-var leveldata, detectors, paths, enemies, titlescreen, enemystack = [], directions = [], towers, counter = 100, playbutton;
-
-function setuplvl(lvl) {
-	$.getJSON('<%= asset_path('levels.json') %>', function(data) {
-		leveldata = data[lvl];
-		drawpaths();
-		for (var i = 0; i < leveldata.enemies.length; i++) {
-			enemystack[i] = leveldata.enemies[i];
+	function isEnemyInCenter(enemy, detector) {
+		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
+			if (enemy.center.x < detector.center.x) {
+				changeDir(enemy, detector);
+			}
 		}
-	});
-}
-
-function drawpaths() {
-	for (var i = 0; i<leveldata.paths.length; i++) {
-		 	var path = leveldata.paths[i];
-		 	Path(parseInt(path.x), parseInt(path.y), parseInt(path.type));
+		else if (enemy.direction == "right" && typeof detector["right"] !== "undefined") {
+			if (enemy.center.x > detector.center.x) {
+				changeDir(enemy, detector);
+			}
+		}
+		else if (enemy.direction == "up" && typeof detector["up"] !== "undefined") {
+			if (enemy.center.y < detector.center.y) {
+				changeDir(enemy, detector);
+			}
+		}
+		else if (enemy.direction == "down" && typeof detector["down"] !== "undefined") {
+			if (enemy.center.y > detector.center.y) {
+				changeDir(enemy, detector);
+			}
+		}		
 	}
-	
-}
 
-function isEnemyInCenter(enemy, detector) {
-	if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
-		if (enemy.center.x < detector.center.x) {
-			changeDir(enemy, detector);
+	function changeDir(enemy, detector) {
+		switch(detector[enemy.direction]) {
+			case "right":
+				enemy.direction = "right";
+				enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
+				enemy.body.velocity.x = 0+enemy.speed;
+				enemy.body.velocity.y = 0;
+				break;
+			case "left":
+				enemy.direction = "left";
+				enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
+				enemy.body.velocity.x = 0-enemy.speed;
+				enemy.body.velocity.y = 0;
+				break;
+			case "down":
+				enemy.direction = "down";
+				enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
+				enemy.body.velocity.x = 0;
+				enemy.body.velocity.y = 0+enemy.speed;
+				break;
+			case "up":
+				enemy.direction = "up";
+				enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
+				enemy.body.velocity.x = 0;
+				enemy.body.velocity.y = 0-enemy.speed;
+				break;
 		}
 	}
-	else if (enemy.direction == "right" && typeof detector["right"] !== "undefined") {
-		if (enemy.center.x > detector.center.x) {
-			changeDir(enemy, detector);
+
+	var Path = function(x, y, type) {
+		var path;
+		switch(type) {
+			case 1: path = game.add.sprite(x, y, 'corner1');
+				break;
+			case 2: path = game.add.sprite(x, y, 'corner2');
+				break;
+			case 3: path = game.add.sprite(x, y, 'corner3');
+				break;
+			case 4: path = game.add.sprite(x, y, 'corner4');
+				break;
+			case 5: path = game.add.sprite(x, y, 'horizontal');
+				break;
+			case 6: path = game.add.sprite(x, y, 'vertical');		
+				break;	
 		}
-	}
-	else if (enemy.direction == "up" && typeof detector["up"] !== "undefined") {
-		if (enemy.center.y < detector.center.y) {
-			changeDir(enemy, detector);
+		if (type < 5) {
+			Detector(x, y, type);
 		}
+		path.body.immovable = true;
+		paths.add(path);
+		return path;
 	}
-	else if (enemy.direction == "down" && typeof detector["down"] !== "undefined") {
-		if (enemy.center.y > detector.center.y) {
-			changeDir(enemy, detector);
+
+	var Detector = function(x, y, type) {
+		var detector = game.add.sprite(x+19, y+19, 'detector');
+		switch(type) {
+			case 1: detector["right"] = "up";
+					detector["down"] = "left";
+				break;
+			case 2: detector["left"] = "up";
+					detector["down"] = "right";
+				break;
+			case 3: detector["up"] = "right";
+					detector["left"] = "up";
+				break;
+			case 4: detector["right"] = "down";
+					detector["up"] = "left";
+				break;
 		}
-	}		
-}
-
-function changeDir(enemy, detector) {
-	switch(detector[enemy.direction]) {
-		case "right":
-			enemy.direction = "right";
-			enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
-			enemy.body.velocity.x = 0+enemy.speed;
-			enemy.body.velocity.y = 0;
-			break;
-		case "left":
-			enemy.direction = "left";
-			enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
-			enemy.body.velocity.x = 0-enemy.speed;
-			enemy.body.velocity.y = 0;
-			break;
-		case "down":
-			enemy.direction = "down";
-			enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
-			enemy.body.velocity.x = 0;
-			enemy.body.velocity.y = 0+enemy.speed;
-			break;
-		case "up":
-			enemy.direction = "up";
-			enemy.reset(detector.center.x-(enemy.body.width/2), detector.center.y-(enemy.body.height/2));
-			enemy.body.velocity.x = 0;
-			enemy.body.velocity.y = 0-enemy.speed;
-			break;
+		detector.visible = false;
+		detectors.add(detector);
 	}
-}
 
-
-
-var Path = function(x, y, type) {
-	var path;
-	switch(type) {
-		case 1: path = game.add.sprite(x, y, 'corner1');
-			break;
-		case 2: path = game.add.sprite(x, y, 'corner2');
-			break;
-		case 3: path = game.add.sprite(x, y, 'corner3');
-			break;
-		case 4: path = game.add.sprite(x, y, 'corner4');
-			break;
-		case 5: path = game.add.sprite(x, y, 'horizontal');
-			break;
-		case 6: path = game.add.sprite(x, y, 'vertical');		
-			break;	
+	var Enemy = function(centerx, centery, type) {
+		var enemy;
+		switch(type) {
+			case 1: enemy = game.add.sprite(centerx, centery, 'badguy1');
+				enemy.speed = 75;
+				break;
+			case 2: enemy = game.add.sprite(centerx, centery, 'badguy2');
+				enemy.speed = 100;
+				break;
+			case 3: enemy = game.add.sprite(centerx, centery, 'badguy3');
+				enemy.speed = 50;
+				break;
+		}
+		enemy.direction = null;
+		enemies.add(enemy);
+		return enemy;
 	}
-	if (type < 5) {
-		Detector(x, y, type);
-	}
-	path.body.immovable = true;
-	paths.add(path);
-	return path;
-}
-
-var Detector = function(x, y, type) {
-	var detector = game.add.sprite(x+19, y+19, 'detector');
-	switch(type) {
-		case 1: detector["right"] = "up";
-				detector["down"] = "left";
-			break;
-		case 2: detector["left"] = "up";
-				detector["down"] = "right";
-			break;
-		case 3: detector["up"] = "right";
-				detector["left"] = "up";
-			break;
-		case 4: detector["right"] = "down";
-				detector["up"] = "left";
-			break;
-	}
-	detector.visible = false;
-	detectors.add(detector);
-}
-
-var Enemy = function(centerx, centery, type) {
-	var enemy;
-	switch(type) {
-		case 1: enemy = game.add.sprite(centerx, centery, 'badguy1');
-			enemy.speed = 75;
-			break;
-		case 2: enemy = game.add.sprite(centerx, centery, 'badguy2');
-			enemy.speed = 100;
-			break;
-		case 3: enemy = game.add.sprite(centerx, centery, 'badguy3');
-			enemy.speed = 50;
-			break;
-	}
-	enemy.direction = null;
-	enemies.add(enemy);
-	return enemy;
-}
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gamescreen');
-game.state.add('Titlescreen', Game.Titlescreen);
-game.state.add('Lvlselect', Game.Lvlselect);
-game.state.add('Actualgame', Game.Actualgame);
-game.state.start('Titlescreen', true, false, 1);
+	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gamescreen');
+	game.state.add('Preload', Game.Preload);
+	game.state.add('Titlescreen', Game.Titlescreen);
+	game.state.add('Lvlselect', Game.Lvlselect);
+	game.state.add('Actualgame', Game.Actualgame);
+	game.state.start('Preload');
 </script>
