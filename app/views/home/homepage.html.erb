@@ -23,6 +23,7 @@
 </div>
 <%= javascript_include_tag "phaser.min.js" %>
 
+<% content_for :js do %>
 <script type="text/javascript">
 	var level_data, current_level, detectors, paths, enemies, enemystack = [], towers, counter = 100;
 	var Game = {};
@@ -30,21 +31,21 @@
 	Game.Preload = function(game){};
 	Game.Preload.prototype = {
 		preload: function() {
-			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
-			game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
-			game.load.image('lvlselectback', '<%= asset_path('levelselect.png') %>');
-			game.load.image('detector', '<%= asset_path('detector.png') %>');
-			game.load.image('background', '<%= asset_path('grass1.jpg') %>');
-			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
-			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
-			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
-			game.load.image('tower1', '<%= asset_path('tower.png') %>');
-			game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
-			game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
-			game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
-			game.load.image('corner4', '<%= asset_path('corner_path_4.png') %>');
-			game.load.image('horizontal', '<%= asset_path('horizontal_path.png') %>');
-			game.load.image('vertical', '<%= asset_path('vertical_path.png') %>');
+			this.game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
+			this.game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
+			this.game.load.image('lvlselectback', '<%= asset_path('levelselect.png') %>');
+			this.game.load.image('detector', '<%= asset_path('detector.png') %>');
+			this.game.load.image('background', '<%= asset_path('grass1.jpg') %>');
+			this.game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
+			this.game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
+			this.game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
+			this.game.load.image('tower1', '<%= asset_path('tower.png') %>');
+			this.game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
+			this.game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
+			this.game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
+			this.game.load.image('corner4', '<%= asset_path('corner_path_4.png') %>');
+			this.game.load.image('horizontal', '<%= asset_path('horizontal_path.png') %>');
+			this.game.load.image('vertical', '<%= asset_path('vertical_path.png') %>');
 		},
 		create: function() {
 			console.log("Preload State Started");
@@ -55,10 +56,9 @@
 	Game.Titlescreen.prototype = {
 		create: function() {
 			console.log("Titlescreen State Started");
-			game.add.sprite(0, 0, 'titleback');
-			game.add.button(game.world.centerX - 79, game.world.centerY - 90, 'playbutton', function() { 
-				current_level = 1;
-				that.game.state.start('Actualgame'); 
+			this.game.add.sprite(0, 0, 'titleback');
+			this.game.add.button(this.game.world.centerX - 79, this.game.world.centerY - 90, 'playbutton', function() { 
+				this.game.state.start('Actualgame', true, false, 1); 
 			}, this, 0, 1, 2);
 		},
 	};
@@ -66,38 +66,39 @@
 	Game.Lvlselect.prototype = {
 		create: function() {
 			console.log("Lvlselect State Started");
-			game.add.sprite(0, 0, 'lvlselectback');
+			this.game.add.sprite(0, 0, 'lvlselectback');
+			// Set current_level
 		},
 	};	
 	Game.Actualgame = function(game) {
 		this.level;
 	};
 	Game.Actualgame.prototype = {
-		init: function (level, a, b, c) {
+		init: function(level) {
 			console.log("Actualgame State Started");
-			console.log(level, a, b, c);
-			this.level = level;
+			this.level = level
 		},
 		create: function() {
-			var background = game.add.sprite(0, 0, 'background');
-			paths = game.add.group();
-			detectors = game.add.group();
-			enemies = game.add.group();
-			towers = game.add.group();
-			console.log("this.level:" + this.level); // [object Object]
+			var background = this.game.add.sprite(0, 0, 'background');
+			paths = this.game.add.group();
+			detectors = this.game.add.group();
+			enemies = this.game.add.group();
+			towers = this.game.add.group();
 			setuplvl(this.level);
 		},
 		update: function() {
-			game.physics.overlap(enemies, detectors, isEnemyInCenter, null, this);
-			if (enemystack.length > 0 && counter >= 100) {
-				var enemy = enemystack.shift();
-				enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
-				enemy.body.velocity.x = enemy.speed;
-				enemy.direction = level_data.startdirection;
-				console.log("created enemy");
-				counter = 0;
+			if (this.game.initiated){
+				this.game.physics.overlap(enemies, detectors, isEnemyInCenter, null, this);
+				if (enemystack.length > 0 && counter >= 100) {
+					var enemy = enemystack.shift();
+					enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
+					enemy.body.velocity.x = enemy.speed;
+					enemy.direction = level_data.startdirection;
+					console.log("created enemy");
+					counter = 0;
+				}
+				counter++;				
 			}
-			counter++;
 		}
 	};
 	function setuplvl(lvl) {
@@ -108,10 +109,12 @@
 				enemystack[i] = level_data.enemies[i];
 			}
 		});
+		this.game.initiated = true;
 	}
 	function drawpaths() {
 		for (var i = 0; i<level_data.paths.length; i++) {
 			 	var path = level_data.paths[i];
+			 	console.log("" + path.x + ", " + path.y + ", " + path.type);
 			 	Path(parseInt(path.x), parseInt(path.y), parseInt(path.type));
 		}
 		
@@ -171,17 +174,17 @@
 	var Path = function(x, y, type) {
 		var path;
 		switch(type) {
-			case 1: path = game.add.sprite(x, y, 'corner1');
+			case 1: path = this.game.add.sprite(x, y, 'corner1');
 				break;
-			case 2: path = game.add.sprite(x, y, 'corner2');
+			case 2: path = this.game.add.sprite(x, y, 'corner2');
 				break;
-			case 3: path = game.add.sprite(x, y, 'corner3');
+			case 3: path = this.game.add.sprite(x, y, 'corner3');
 				break;
-			case 4: path = game.add.sprite(x, y, 'corner4');
+			case 4: path = this.game.add.sprite(x, y, 'corner4');
 				break;
-			case 5: path = game.add.sprite(x, y, 'horizontal');
+			case 5: path = this.game.add.sprite(x, y, 'horizontal');
 				break;
-			case 6: path = game.add.sprite(x, y, 'vertical');		
+			case 6: path = this.game.add.sprite(x, y, 'vertical');		
 				break;	
 		}
 		if (type < 5) {
@@ -193,7 +196,7 @@
 	}
 
 	var Detector = function(x, y, type) {
-		var detector = game.add.sprite(x+19, y+19, 'detector');
+		var detector = this.game.add.sprite(x+19, y+19, 'detector');
 		switch(type) {
 			case 1: detector["right"] = "up";
 					detector["down"] = "left";
@@ -215,13 +218,13 @@
 	var Enemy = function(centerx, centery, type) {
 		var enemy;
 		switch(type) {
-			case 1: enemy = game.add.sprite(centerx, centery, 'badguy1');
+			case 1: enemy = this.game.add.sprite(centerx, centery, 'badguy1');
 				enemy.speed = 75;
 				break;
-			case 2: enemy = game.add.sprite(centerx, centery, 'badguy2');
+			case 2: enemy = this.game.add.sprite(centerx, centery, 'badguy2');
 				enemy.speed = 100;
 				break;
-			case 3: enemy = game.add.sprite(centerx, centery, 'badguy3');
+			case 3: enemy = this.game.add.sprite(centerx, centery, 'badguy3');
 				enemy.speed = 50;
 				break;
 		}
@@ -230,9 +233,10 @@
 		return enemy;
 	}
 	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gamescreen');
-	game.state.add('Preload', Game.Preload);
-	game.state.add('Titlescreen', Game.Titlescreen);
-	game.state.add('Lvlselect', Game.Lvlselect);
-	game.state.add('Actualgame', Game.Actualgame);
-	game.state.start('Preload');
+	this.game.state.add('Preload', Game.Preload);
+	this.game.state.add('Titlescreen', Game.Titlescreen);
+	this.game.state.add('Lvlselect', Game.Lvlselect);
+	this.game.state.add('Actualgame', Game.Actualgame);
+	this.game.state.start('Preload');
 </script>
+<% end %>
