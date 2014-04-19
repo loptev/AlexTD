@@ -69,7 +69,8 @@
 	Game.Lvlselect.prototype = {
 		create: function() {
 			console.log("Lvlselect State Started");
-			game.add.sprite(0, 0, 'lvlselectback');
+			this.game.add.sprite(0, 0, 'lvlselectback');
+			// Set current_level
 		},
 	};	
 	Game.Actualgame = function(game) {
@@ -100,7 +101,7 @@
 				enemy.body.velocity.x = enemy.speed;
 				enemy.direction = level_data.startdirection;
 				counter = 0;
-			}
+			};
 			counter++;
 		}
 	};
@@ -112,10 +113,12 @@
 				enemystack[i] = level_data.enemies[i];
 			}
 		});
+		this.game.initiated = true;
 	}
 	function drawpaths() {
 		for (var i = 0; i<level_data.paths.length; i++) {
 			 	var path = level_data.paths[i];
+			 	console.log("" + path.x + ", " + path.y + ", " + path.type);
 			 	Path(parseInt(path.x), parseInt(path.y), parseInt(path.type));
 		}
 		
@@ -175,17 +178,17 @@
 	var Path = function(x, y, type) {
 		var path;
 		switch(type) {
-			case 1: path = game.add.sprite(x, y, 'corner1');
+			case 1: path = this.game.add.sprite(x, y, 'corner1');
 				break;
-			case 2: path = game.add.sprite(x, y, 'corner2');
+			case 2: path = this.game.add.sprite(x, y, 'corner2');
 				break;
-			case 3: path = game.add.sprite(x, y, 'corner3');
+			case 3: path = this.game.add.sprite(x, y, 'corner3');
 				break;
-			case 4: path = game.add.sprite(x, y, 'corner4');
+			case 4: path = this.game.add.sprite(x, y, 'corner4');
 				break;
-			case 5: path = game.add.sprite(x, y, 'horizontal');
+			case 5: path = this.game.add.sprite(x, y, 'horizontal');
 				break;
-			case 6: path = game.add.sprite(x, y, 'vertical');		
+			case 6: path = this.game.add.sprite(x, y, 'vertical');		
 				break;	
 		}
 		if (type < 5) {
@@ -198,7 +201,7 @@
 	}
 
 	var Detector = function(x, y, type) {
-		var detector = game.add.sprite(x+19, y+19, 'detector');
+		var detector = this.game.add.sprite(x+19, y+19, 'detector');
 		switch(type) {
 			case 1: detector["right"] = "up";
 					detector["down"] = "left";
@@ -221,13 +224,13 @@
 	var Enemy = function(centerx, centery, type) {
 		var enemy;
 		switch(type) {
-			case 1: enemy = game.add.sprite(centerx, centery, 'badguy1');
+			case 1: enemy = this.game.add.sprite(centerx, centery, 'badguy1');
 				enemy.speed = 75;
 				break;
-			case 2: enemy = game.add.sprite(centerx, centery, 'badguy2');
+			case 2: enemy = this.game.add.sprite(centerx, centery, 'badguy2');
 				enemy.speed = 100;
 				break;
-			case 3: enemy = game.add.sprite(centerx, centery, 'badguy3');
+			case 3: enemy = this.game.add.sprite(centerx, centery, 'badguy3');
 				enemy.speed = 50;
 				break;
 		}
@@ -237,10 +240,10 @@
 		return enemy;
 	}
 	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gamescreen');
-	game.state.add('Preload', Game.Preload);
-	game.state.add('Titlescreen', Game.Titlescreen);
-	game.state.add('Lvlselect', Game.Lvlselect);
-	game.state.add('Actualgame', Game.Actualgame);
-	game.state.start('Preload');
+	this.game.state.add('Preload', Game.Preload);
+	this.game.state.add('Titlescreen', Game.Titlescreen);
+	this.game.state.add('Lvlselect', Game.Lvlselect);
+	this.game.state.add('Actualgame', Game.Actualgame);
+	this.game.state.start('Preload');
 </script>
 <% end %>
