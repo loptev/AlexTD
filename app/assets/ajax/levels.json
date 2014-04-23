@@ -54,6 +54,6 @@
 			{ "x":"760", "y":"440", "type": "5" }
 		],
 		"startdirection": "right",
-		"spawnlocation": {"x":"-40", "y":"440"}
+		"spawnlocation": {"x":"-40", "y":"442"}
 	}
 }

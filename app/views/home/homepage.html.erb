@@ -30,9 +30,8 @@
 	Game.Preload = function(game){};
 	Game.Preload.prototype = {
 		preload: function() {
-			game.load.tilemap('mario', '<%= asset_path('supermario.json') %>', null, Phaser.Tilemap.TILED_JSON);
-    		game.load.image('tiles', '<%= asset_path('supermario.png') %>');
-			//game.load.tilemap('tdgrid', '<%= asset_path('Nameofthing') %>', null, Phaser.Tilemap.TILED_JSON);
+			game.load.tilemap('desert', '<%= asset_path('desert.json') %>', null, Phaser.Tilemap.TILED_JSON);
+    		game.load.image('tile_image', '<%= asset_path('desert_tiles_small.png') %>');
 			game.physics.startSystem(Phaser.Physics.ARCADE);
 			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
 			game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
@@ -82,10 +81,11 @@
 			this.level = level;
 		},
 		create: function() {
-			var background = game.add.sprite(0, 0, 'background');
-			map = game.add.tilemap('mario');
-			map.addTilesetImage('SuperMarioBros-World1-1', 'tiles');
-			layer = map.createLayer('World1');
+			game.add.sprite(0, 0, 'background');
+			// this.game.stage.scale.startFullScreen();
+			map = game.add.tilemap('desert');
+			map.addTilesetImage('Desert', 'tile_image');
+			layer = map.createLayer('Ground');
 			layer.resizeWorld();
 			paths = game.add.group();
 			detectors = game.add.group();
@@ -108,7 +108,7 @@
 	function setuplvl(lvl) {
 		$.getJSON('<%= asset_path('levels.json') %>', function(data) {
 			level_data = data[lvl];
-			drawpaths();
+			// drawpaths();
 			for (var i = 0; i < level_data.enemies.length; i++) {
 				enemystack[i] = level_data.enemies[i];
 			}
