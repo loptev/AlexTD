@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="29" height="22" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="desert" tilewidth="28" tileheight="28">
+  <image source="../images/desert_tiles_small.png" width="224" height="168"/>
+  <terraintypes>
+   <terrain name="New Terrain" tile="-1"/>
+  </terraintypes>
+ </tileset>
+ <layer name="Desert" width="29" height="22">
+  <data encoding="base64" compression="zlib">
+   eJztkrEOgCAMRKtOyiTopvz/Z9JBFtITFGSxwxvIXfMSWk9EXlGUVwzMKDB96JyZRcB0cG6MZfaOTgPef3Pmbg3lNc7craG8hRPdWppHWjhRD81J/32C2eNhL80j0n+X7qW0lzrtDe7qrJU9R/IOlfYE/cs9gg==
+  </data>
+ </layer>
+ <objectgroup name="Detectors" width="29" height="22">
+  <object name="up" type="up" x="199" y="557" width="11" height="11">
+   <properties>
+    <property name="new direction" value="up"/>
+   </properties>
+  </object>
+  <object name="right" type="right" x="200" y="271" width="9" height="9">
+   <properties>
+    <property name="new direction" value="right"/>
+   </properties>
+  </object>
+  <object name="down" type="down" x="329" y="275" width="9" height="9">
+   <properties>
+    <property name="new direction" value="down"/>
+   </properties>
+  </object>
+  <object name="right" type="right" x="327" y="560" width="11" height="11">
+   <properties>
+    <property name="new direction" value="right"/>
+   </properties>
+  </object>
+  <object name="up" type="up" x="519" y="557" width="11" height="12">
+   <properties>
+    <property name="new direction" value="up"/>
+   </properties>
+  </object>
+  <object name="right" type="right" x="648" y="559" width="8" height="10">
+   <properties>
+    <property name="new direction" value="right"/>
+   </properties>
+  </object>
+  <object name="up" type="up" x="777" y="559" width="11" height="11">
+   <properties>
+    <property name="new direction" value="up"/>
+   </properties>
+  </object>
+  <object name="right" type="right" x="520" y="428" width="9" height="10">
+   <properties>
+    <property name="new direction" value="right"/>
+   </properties>
+  </object>
+  <object name="down" type="down" x="646" y="429" width="12" height="11">
+   <properties>
+    <property name="new direction" value="down"/>
+   </properties>
+  </object>
+  <object name="right" type="right" x="777" y="430" width="10" height="10">
+   <properties>
+    <property name="new direction" value="right"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
