@@ -12,52 +12,52 @@
   </data>
  </layer>
  <objectgroup name="Detectors" width="29" height="22">
-  <object name="up" type="up" x="199" y="557" width="11" height="11">
+  <object name="up" type="up" x="204" y="560" width="5" height="4">
    <properties>
     <property name="new direction" value="up"/>
    </properties>
   </object>
-  <object name="right" type="right" x="200" y="271" width="9" height="9">
+  <object name="right" type="right" x="202" y="272" width="5" height="4">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="down" type="down" x="329" y="275" width="9" height="9">
+  <object name="down" type="down" x="332" y="272" width="5" height="5">
    <properties>
     <property name="new direction" value="down"/>
    </properties>
   </object>
-  <object name="right" type="right" x="327" y="560" width="11" height="11">
+  <object name="right" type="right" x="330" y="561" width="5" height="5">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="up" type="up" x="519" y="557" width="11" height="12">
+  <object name="up" type="up" x="524" y="560" width="4" height="5">
    <properties>
     <property name="new direction" value="up"/>
    </properties>
   </object>
-  <object name="right" type="right" x="648" y="559" width="8" height="10">
+  <object name="right" type="right" x="652" y="561" width="4" height="4">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="up" type="up" x="777" y="559" width="11" height="11">
+  <object name="up" type="up" x="780" y="560" width="4" height="4">
    <properties>
     <property name="new direction" value="up"/>
    </properties>
   </object>
-  <object name="right" type="right" x="520" y="428" width="9" height="10">
+  <object name="right" type="right" x="522" y="431" width="5" height="5">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="down" type="down" x="646" y="429" width="12" height="11">
+  <object name="down" type="down" x="652" y="432" width="4" height="4">
    <properties>
     <property name="new direction" value="down"/>
    </properties>
   </object>
-  <object name="right" type="right" x="777" y="430" width="10" height="10">
+  <object name="right" type="right" x="779" y="431" width="4" height="4">
    <properties>
     <property name="new direction" value="right"/>
    </properties>

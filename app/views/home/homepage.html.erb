@@ -24,7 +24,7 @@
 <% content_for :js do %>
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
-	var level_data, map, layer, current_level, detectors, paths, enemies, enemystack = [], towers, counter = 100;
+	var level_data, map, layer, layer2, current_level, detectors, paths, enemies, enemystack = [], towers, counter = 100;
 	var Game = {};
 
 	Game.Preload = function(game){};
@@ -86,7 +86,8 @@
 			map = game.add.tilemap('desert');
 			map.addTilesetImage('Desert', 'tile_image');
 			layer = map.createLayer('Ground');
-			// map.createLayer('Detectors');
+			map.createFromObjects('Detectors', 1, 'detector', 0, true, false, detectors);
+			console.log(detectors);
 			layer.resizeWorld();
 			paths = game.add.group();
 			detectors = game.add.group();
