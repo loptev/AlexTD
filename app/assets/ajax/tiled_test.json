@@ -5,134 +5,133 @@
          "objects":[
                 {
                  "gid":1,
-                 "height":4,
+                 "height":2,
                  "name":"up",
                  "properties":
                     {
-                     "right":"up",
-                     "down":"left"
+                     "right":"up"
                     },
                  "visible":true,
-                 "width":5,
+                 "width":2,
                  "x":181,
                  "y":491
                 }, 
                 {
                  "gid":1,
-                 "height":4,
+                 "height":2,
                  "name":"right",
                  "properties":
                     {
-                     "direction":"right"
+                     "up":"right"
                     },
                  "visible":true,
-                 "width":5,
+                 "width":2,
                  "x":181,
-                 "y":237
+                 "y":239
                 }, 
                 {
                  "gid":1,
-                 "height":5,
+                 "height":2,
                  "name":"down",
                  "properties":
                     {
-                     "direction":"down"
+                     "right":"down"
                     },
                  "visible":true,
-                 "width":5,
-                 "x":332,
-                 "y":206
+                 "width":2,
+                 "x":293,
+                 "y":239
                 }, 
                 {
                  "gid":1,
-                 "height":5,
+                 "height":2,
                  "name":"right",
                  "properties":
                     {
-                     "direction":"right"
+                     "down":"right"
                     },
                  "visible":true,
-                 "width":5,
-                 "x":330,
+                 "width":2,
+                 "x":293,
                  "y":491
                 }, 
                 {
                  "gid":1,
-                 "height":5,
+                 "height":2,
                  "name":"up",
                  "properties":
                     {
-                     "direction":"up"
+                     "right":"up"
                     },
                  "visible":true,
-                 "width":4,
-                 "x":524,
+                 "width":2,
+                 "x":461,
                  "y":491
                 }, 
                 {
                  "gid":1,
-                 "height":4,
+                 "height":2,
                  "name":"right",
                  "properties":
                     {
-                     "direction":"right"
+                     "down":"right"
                     },
                  "visible":true,
-                 "width":4,
-                 "x":652,
+                 "width":2,
+                 "x":573,
                  "y":491
                 }, 
                 {
                  "gid":1,
-                 "height":4,
+                 "height":2,
                  "name":"up",
                  "properties":
                     {
-                     "direction":"up"
+                     "right":"up"
                     },
                  "visible":true,
-                 "width":4,
-                 "x":780,
+                 "width":2,
+                 "x":685,
                  "y":491
                 }, 
                 {
                  "gid":1,
-                 "height":5,
+                 "height":2,
                  "name":"right",
                  "properties":
                     {
-                     "direction":"right"
+                     "up":"right"
                     },
                  "visible":true,
-                 "width":5,
-                 "x":522,
-                 "y":391
+                 "width":2,
+                 "x":461,
+                 "y":379
                 }, 
                 {
                  "gid":1,
-                 "height":4,
+                 "height":2,
                  "name":"down",
                  "properties":
                     {
-                     "direction":"down"
+                     "right":"down"
                     },
                  "visible":true,
-                 "width":4,
-                 "x":652,
-                 "y":391
+                 "width":2,
+                 "x":573,
+                 "y":379
                 }, 
                 {
                  "gid":1,
-                 "height":4,
+                 "height":2,
                  "name":"right",
                  "properties":
                     {
-                     "direction":"right"
+                     "up":"right"
                     },
                  "visible":true,
-                 "width":4,
-                 "x":779,
-                 "y":391
+                 "width":2,
+                 "x":685,
+                 "y":379
                 }],
          "opacity":1,
          "type":"objectgroup",
