@@ -24,7 +24,7 @@
 <% content_for :js do %>
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
-	var level_data, map, layer, layer2, current_level, detectors, paths, enemies, enemystack = [], towers, tower, counter = 100;
+	var level_data, map, layer, layer2, currently_dragging, being_dragged, current_level, detectors, paths, enemies, enemystack = [], towers, tower1, tower2, tower3, counter = 100;
 	var Game = {};
 
 	Game.Preload = function(game){};
@@ -41,9 +41,9 @@
 			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
 			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
 			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
-			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 118, 118, 1);
-			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 118, 118, 1);
-			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 118, 118, 1);
+			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 56, 56, 1);
+			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 1);
+			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 1);
 			game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
 			game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
 			game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
@@ -82,6 +82,7 @@
 			this.level = level;
 		},
 		create: function() {
+			currently_dragging = false;
 			game.add.sprite(0, 0, 'background');
 			map = game.add.tilemap('desert');
 			map.addTilesetImage('Desert', 'tile_image');
@@ -95,17 +96,29 @@
 			enemies = game.add.group();
 			towers = game.add.group();
 
-			
-			tower = game.add.sprite(10, 10, 'tower1');
-			towers.add(tower);
+			tower1 = game.add.sprite(10, 10, "tower1");
+			tower1.inputEnabled = true;
+			tower1.events.onInputDown.add(copyAndDragTower, this);
+			tower2 = game.add.sprite(70, 10, "tower2");
+			tower2.inputEnabled = true;
+			tower2.events.onInputDown.add(copyAndDragTower, this);
+			tower3 = game.add.sprite(130, 10, "tower3");
+			tower3.inputEnabled = true;
+			tower3.events.onInputDown.add(copyAndDragTower, this);
+        	// tower.input.enableDrag(false, true);
+			towers.add(tower1);
+			towers.add(tower2);
+			towers.add(tower3);
+			// tower.animations.add('walk');
+			// tower.animations.play('walk', 10, true);
+
 			game.physics.enable(towers, Phaser.Physics.ARCADE);
-			game.add.sprite(100, 10, 'tower2');
-			game.add.sprite(190, 10, 'tower3');
-			tower.animations.add('walk');
-			tower.animations.play('walk', 50, true);
 			setuplvl(this.level);
 		},
 		update: function() {
+			if (currently_dragging) {
+				being_dragged.reset(game.input.x, game.input.y);
+			}
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (enemystack.length > 0 && counter >= 100) {
 				var enemy = enemystack.shift();
@@ -115,10 +128,6 @@
 				counter = 0;
 			};
 			counter++;
-			
-
-    		
-
 		}
 	};
 	function setuplvl(lvl) {
@@ -189,6 +198,19 @@
 				enemy.body.velocity.y = 0-enemy.speed;
 				break;
 		}
+	}
+	function copyAndDragTower(tower){
+		var t = game.add.sprite(tower.x, tower.y, tower.key);
+		t.inputEnabled = true;
+		game.physics.enable(t, Phaser.Physics.ARCADE);
+		towers.add(t);
+		currently_dragging = true;
+		being_dragged = t;
+		game.input.onDown.add(function(){ 
+			currently_dragging=false;
+			console.log("currently_dragging is now false");
+			game.input.onDown.removeAll();
+		}, this)		
 	}
 
 	var Path = function(x, y, type) {
