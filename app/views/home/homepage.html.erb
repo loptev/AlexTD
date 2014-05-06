@@ -24,12 +24,13 @@
 <% content_for :js do %>
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
-	var level_data, map, layer, layer2, currently_dragging, being_dragged, current_level, detectors, paths, enemies, enemystack = [], towers, tower1, tower2, tower3, counter = 100;
+	var level_data, map, layer, layer2, currently_dragging, being_dragged, current_level, detectors, paths, enemies, enemystack = [], towers, tower1, tower2, tower3, startwave, wave = 0, counter = 100;
 	var Game = {};
 
 	Game.Preload = function(game){};
 	Game.Preload.prototype = {
 		preload: function() {
+			game.load.spritesheet('startwavebutton', '<%= asset_path('startwave_button.png') %>', 158, 30);
 			game.load.tilemap('desert', '<%= asset_path('tiled_test.json') %>', null, Phaser.Tilemap.TILED_JSON);
     		game.load.image('tile_image', '<%= asset_path('desert_tiles_small.png') %>');
 			game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -105,14 +106,15 @@
 			tower3 = game.add.sprite(130, 10, "tower3");
 			tower3.inputEnabled = true;
 			tower3.events.onInputDown.add(copyAndDragTower, this);
-        	// tower.input.enableDrag(false, true);
 			towers.add(tower1);
 			towers.add(tower2);
 			towers.add(tower3);
-			// tower.animations.add('walk');
-			// tower.animations.play('walk', 10, true);
-
 			game.physics.enable(towers, Phaser.Physics.ARCADE);
+			game.add.button(10, 100, 'startwavebutton', function() { 
+				startwave = true;
+				buildwave(wave); 
+				wave++;
+			}, this, 0, 1, 2);
 			setuplvl(this.level);
 		},
 		update: function() {
@@ -120,34 +122,31 @@
 				being_dragged.reset(game.input.x, game.input.y);
 			}
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
-			if (enemystack.length > 0 && counter >= 100) {
-				var enemy = enemystack.shift();
-				enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
-				enemy.body.velocity.x = enemy.speed;
-				enemy.direction = level_data.startdirection;
-				counter = 0;
-			};
-			counter++;
+			if (startwave) {
+				if (enemystack.length > 0 && counter >= 100) {
+					var enemy = enemystack.shift();
+					enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
+					enemy.body.velocity.x = enemy.speed;
+					enemy.direction = level_data.startdirection;
+					counter = 0;
+				};
+				counter++;
+			}
 		}
 	};
 	function setuplvl(lvl) {
 		$.getJSON('<%= asset_path('levels.json') %>', function(data) {
 			level_data = data[lvl];
-			// drawpaths();
-			for (var i = 0; i < level_data.enemies.length; i++) {
-				enemystack[i] = level_data.enemies[i];
-			}
+			console.log(level_data);
 		});
-		this.game.initiated = true;
 	}
-	function drawpaths() {
-		for (var i = 0; i<level_data.paths.length; i++) {
-			 	var path = level_data.paths[i];
-			 	console.log("" + path.x + ", " + path.y + ", " + path.type);
-			 	Path(parseInt(path.x), parseInt(path.y), parseInt(path.type));
+
+	function buildwave(wave) {
+		for (var i = 0; i < level_data.enemies.waves[wave].length; i++) {
+				enemystack[i] = level_data.enemies.waves[wave][i];
 		}
-		
-	}
+	}	
+
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
 			if (enemy.body.center.x < detector.body.center.x) {
