@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="29" height="22" tilewidth="32" tileheight="32">
+<map version="1.0" orientation="orthogonal" width="29" height="22" tilewidth="28" tileheight="28">
  <tileset firstgid="1" name="desert" tilewidth="28" tileheight="28">
   <image source="../images/desert_tiles_small.png" width="224" height="168"/>
   <terraintypes>
@@ -12,52 +12,52 @@
   </data>
  </layer>
  <objectgroup name="Detectors" width="29" height="22">
-  <object name="up" type="up" x="204" y="560" width="5" height="4">
+  <object name="up" type="up" x="204" y="560" width="2" height="2">
    <properties>
     <property name="new direction" value="up"/>
    </properties>
   </object>
-  <object name="right" type="right" x="202" y="272" width="5" height="4">
+  <object name="right" type="right" x="202" y="272" width="2" height="2">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="down" type="down" x="332" y="272" width="5" height="5">
+  <object name="down" type="down" x="332" y="272" width="2" height="5">
    <properties>
     <property name="new direction" value="down"/>
    </properties>
   </object>
-  <object name="right" type="right" x="330" y="561" width="5" height="5">
+  <object name="right" type="right" x="330" y="561" width="2" height="5">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="up" type="up" x="524" y="560" width="4" height="5">
+  <object name="up" type="up" x="524" y="560" width="2" height="5">
    <properties>
     <property name="new direction" value="up"/>
    </properties>
   </object>
-  <object name="right" type="right" x="652" y="561" width="4" height="4">
+  <object name="right" type="right" x="652" y="561" width="2" height="2">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="up" type="up" x="780" y="560" width="4" height="4">
+  <object name="up" type="up" x="780" y="560" width="2" height="2">
    <properties>
     <property name="new direction" value="up"/>
    </properties>
   </object>
-  <object name="right" type="right" x="522" y="431" width="5" height="5">
+  <object name="right" type="right" x="522" y="431" width="2" height="5">
    <properties>
     <property name="new direction" value="right"/>
    </properties>
   </object>
-  <object name="down" type="down" x="652" y="432" width="4" height="4">
+  <object name="down" type="down" x="652" y="432" width="2" height="2">
    <properties>
     <property name="new direction" value="down"/>
    </properties>
   </object>
-  <object name="right" type="right" x="779" y="431" width="4" height="4">
+  <object name="right" type="right" x="779" y="431" width="2" height="2">
    <properties>
     <property name="new direction" value="right"/>
    </properties>

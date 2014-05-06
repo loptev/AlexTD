@@ -24,7 +24,15 @@
 <% content_for :js do %>
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
-	var level_data, map, layer, layer2, currently_dragging, being_dragged, current_level, detectors, paths, enemies, enemystack = [], towers, tower1, tower2, tower3, startwave, wave = 0, counter = 100;
+	var level_data, 
+		map, 
+		layer, marker,
+		currently_dragging, being_dragged, 
+		// Groups
+		detectors, paths, enemies, towers,
+		enemystack = [], 
+		counter = 100,
+		startwave, wave = 0;
 	var Game = {};
 
 	Game.Preload = function(game){};
@@ -42,9 +50,9 @@
 			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
 			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
 			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
-			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 56, 56, 1);
-			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 1);
-			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 1);
+			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 56, 56, 8);
+			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 8);
+			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 8);
 			game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
 			game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
 			game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
@@ -55,8 +63,8 @@
 		create: function() {
 			console.log("Preload State Started");
 			game.state.start('Titlescreen');
-		},
-	}
+		}
+	};
 	Game.Titlescreen = function(game) {};
 	Game.Titlescreen.prototype = {
 		create: function() {
@@ -65,14 +73,14 @@
 			game.add.button(game.world.centerX - 79, game.world.centerY - 90, 'playbutton', function() { 
 				game.state.start('Actualgame', true, false, 1); 
 			}, this, 0, 1, 2);
-		},
+		}
 	};
 	Game.Lvlselect = function(game) {};
 	Game.Lvlselect.prototype = {
 		create: function() {
 			console.log("Lvlselect State Started");
 			this.game.add.sprite(0, 0, 'lvlselectback');
-		},
+		}
 	};	
 	Game.Actualgame = function(game) {
 		this.level;
@@ -81,45 +89,37 @@
 		init: function (level) {
 			console.log("Actualgame State Started");
 			this.level = level;
+			currently_dragging = false;
 		},
 		create: function() {
-			currently_dragging = false;
+			// Create Background and Map
 			game.add.sprite(0, 0, 'background');
 			map = game.add.tilemap('desert');
 			map.addTilesetImage('Desert', 'tile_image');
 			layer = map.createLayer('Ground');
 			layer.resizeWorld();
 			paths = game.add.group();
+			
+			// Create Detectors
 			detectors = game.add.group();
-    		detectors.enableBody = true;
+			detectors.enableBody = true;
 			map.createFromObjects('detectors', 1, 'detector', 0, true, false, detectors);
-			console.log(detectors);
 			enemies = game.add.group();
 			towers = game.add.group();
-
-			tower1 = game.add.sprite(10, 10, "tower1");
-			tower1.inputEnabled = true;
-			tower1.events.onInputDown.add(copyAndDragTower, this);
-			tower2 = game.add.sprite(70, 10, "tower2");
-			tower2.inputEnabled = true;
-			tower2.events.onInputDown.add(copyAndDragTower, this);
-			tower3 = game.add.sprite(130, 10, "tower3");
-			tower3.inputEnabled = true;
-			tower3.events.onInputDown.add(copyAndDragTower, this);
-			towers.add(tower1);
-			towers.add(tower2);
-			towers.add(tower3);
 			game.physics.enable(towers, Phaser.Physics.ARCADE);
 			game.add.button(10, 100, 'startwavebutton', function() { 
 				startwave = true;
 				buildwave(wave); 
 				wave++;
 			}, this, 0, 1, 2);
+			addUI();
 			setuplvl(this.level);
 		},
 		update: function() {
 			if (currently_dragging) {
-				being_dragged.reset(game.input.x, game.input.y);
+				marker.x = game.input.activePointer.worldX - 28;
+			    marker.y = game.input.activePointer.worldY - 28;				
+				being_dragged.reset(game.input.x-being_dragged.width/2, game.input.y-being_dragged.height/2);
 			}
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (startwave) {
@@ -147,6 +147,18 @@
 		}
 	}	
 
+	function addUI(){ //add towers and other user interface objects
+		var tower1 = Tower(10, 10, 'tower1');
+		tower1.inputEnabled = true;
+		tower1.events.onInputDown.add(copyAndDragTower, this);
+		var tower2 = Tower(70, 10, 'tower2');
+		tower2.inputEnabled = true;
+		tower2.events.onInputDown.add(copyAndDragTower, this);
+		var tower3 = Tower(130, 10, 'tower3');
+		tower3.inputEnabled = true;
+		tower3.events.onInputDown.add(copyAndDragTower, this);
+
+	}
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
 			if (enemy.body.center.x < detector.body.center.x) {
@@ -169,7 +181,6 @@
 			}
 		}		
 	}
-
 	function changeDir(enemy, detector) {
 		switch(detector[enemy.direction]) {
 			case "right":
@@ -199,17 +210,48 @@
 		}
 	}
 	function copyAndDragTower(tower){
-		var t = game.add.sprite(tower.x, tower.y, tower.key);
-		t.inputEnabled = true;
-		game.physics.enable(t, Phaser.Physics.ARCADE);
-		towers.add(t);
+		var t = Tower(tower.x, tower.y, tower.key);
 		currently_dragging = true;
 		being_dragged = t;
+		marker = game.add.graphics();		
+	    marker.lineStyle(2, 0x000000, 1);
+	    marker.drawRect((56-t.actualWidth)/2, (56-t.actualHeight)/2, t.actualWidth, t.actualHeight);
+
 		game.input.onDown.add(function(){ 
+			marker.destroy();
 			currently_dragging=false;
-			console.log("currently_dragging is now false");
 			game.input.onDown.removeAll();
-		}, this)		
+		}, this);
+	}
+	var Tower = function(x, y, key) {
+		var tower;
+		switch(key) {
+			case 'tower1': 
+				tower = this.game.add.sprite(x, y, key);
+				tower.speed = 0.6;
+				tower.doesDamage = 0.7;
+				tower.actualHeight = 50;
+				tower.actualWidth = 40;
+				break;
+			case 'tower2': 
+				tower = this.game.add.sprite(x, y, key);
+				tower.speed = 0.9;
+				tower.doesDamage = 0.4;
+				tower.actualHeight = 40;
+				tower.actualWidth = 30;
+				break;
+			case 'tower3': 
+				tower = this.game.add.sprite(x, y, key);
+				tower.speed = 0.5;
+				tower.doesDamage = 1;
+				tower.actualHeight = 56;
+				tower.actualWidth = 40;
+				break;
+			}
+		game.physics.enable(tower, Phaser.Physics.ARCADE);
+		// tower.body.immovable = true;
+		towers.add(tower);
+		return tower;		
 	}
 
 	var Path = function(x, y, type) {
