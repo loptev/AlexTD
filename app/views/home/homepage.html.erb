@@ -32,7 +32,7 @@
 		detectors, paths, enemies, towers,
 		enemystack = [], 
 		counter = 100,
-		startwave, wave = 0;
+		startwave, startwavebutton, wave = 0;
 	var Game = {};
 
 	Game.Preload = function(game){};
@@ -107,7 +107,7 @@
 			enemies = game.add.group();
 			towers = game.add.group();
 			game.physics.enable(towers, Phaser.Physics.ARCADE);
-			game.add.button(10, 100, 'startwavebutton', function() { 
+			startwavebutton = game.add.button(10, 100, 'startwavebutton', function() { 
 				startwave = true;
 				buildwave(wave); 
 				wave++;
@@ -124,17 +124,19 @@
 			}
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (startwave) {
-				if (enemystack.length > 0 && counter >= 100) {
-					var enemy = enemystack.shift();
-					enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
-					enemy.body.velocity.x = enemy.speed;
-					enemy.direction = level_data.startdirection;
-					counter = 0;
-				}
-				else if (enemystack.length = 0) {
+				if (enemystack.length > 0) {
+					if (counter >= 100) {
+						var enemy = enemystack.shift();
+						enemy = Enemy(parseInt(level_data.spawnlocation.x), parseInt(level_data.spawnlocation.y), parseInt(enemy));
+						enemy.body.velocity.x = enemy.speed;
+						enemy.direction = level_data.startdirection;
+						counter = 0;
+					}
+					counter++;
+				} else {
 					startwavebutton.visible = true;
+					startwave = false;
 				}
-				counter++;
 			}
 		}
 	};
