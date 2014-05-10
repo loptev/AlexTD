@@ -219,7 +219,7 @@
 		being_dragged = t;
 		marker = game.add.graphics();		
 	    marker.lineStyle(2, 0x000000, 1);
-	    marker.drawRect((56-t.actualWidth)/2, (56-t.actualHeight)/2, t.actualWidth, t.actualHeight);
+	    marker.drawRect(t.left, t.top, t.actualWidth, t.actualHeight);
 
 		game.input.onDown.add(function(){ 
 			marker.destroy();
@@ -234,6 +234,8 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.6;
 				tower.doesDamage = 0.7;
+				tower.top = 4;
+				tower.left = 9;
 				tower.actualHeight = 50;
 				tower.actualWidth = 40;
 				break;
@@ -241,6 +243,8 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.9;
 				tower.doesDamage = 0.4;
+				tower.top = 12;
+				tower.left = 13;
 				tower.actualHeight = 40;
 				tower.actualWidth = 30;
 				break;
@@ -248,6 +252,8 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.5;
 				tower.doesDamage = 1;
+				tower.top = -1;
+				tower.left = 8;
 				tower.actualHeight = 56;
 				tower.actualWidth = 40;
 				break;
