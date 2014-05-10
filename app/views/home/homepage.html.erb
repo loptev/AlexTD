@@ -149,7 +149,7 @@
 
 	function buildwave(wave) {
 		for (var i = 0; i < level_data.enemies.waves[wave].length; i++) {
-				enemystack[i] = level_data.enemies.waves[wave][i];
+			enemystack[i] = level_data.enemies.waves[wave][i];
 		}
 	}	
 
@@ -216,21 +216,25 @@
 		}
 	}
 	function copyAndDragTower(tower){
-		var t = Tower(tower.x, tower.y, tower.key);
-		currently_dragging = true;
-		being_dragged = t;
-		marker = game.add.graphics();		
-	    // marker.lineStyle(2, 0x000000, 1);
-	    marker.beginFill(0x0BFF0B, 0.3)
-	    marker.drawRect(t.left, t.top, t.actualWidth, t.actualHeight);
-	    being_dragged.z = 13;
-	    being_dragged.bringToTop();
+		if (!currently_dragging){
+			var t = Tower(tower.x, tower.y, tower.key);
+			currently_dragging = true;
+			being_dragged = t;
+			marker = game.add.graphics();		
+		    // marker.lineStyle(2, 0x000000, 1);
+		    marker.beginFill(0x0BFF0B, 0.3)
+		    marker.drawRect(t.left, t.top, t.actualWidth, t.actualHeight);
+		    marker.z = 12;
+		    being_dragged.z = 13;
 
-		game.input.onDown.add(function(){ 
-			marker.destroy();
-			currently_dragging=false;
-			game.input.onDown.removeAll();
-		}, this);
+			game.input.onDown.add(function(){
+				if (game.input.x>190 || game.input.y>80){
+					marker.destroy();
+					currently_dragging=false;
+					game.input.onDown.removeAll();				
+				}
+			}, this);
+		}
 	}
 	var Tower = function(x, y, key) {
 		var tower;
