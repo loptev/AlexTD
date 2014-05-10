@@ -111,6 +111,7 @@
 				startwave = true;
 				buildwave(wave); 
 				wave++;
+				startwavebutton.visible = false;
 			}, this, 0, 1, 2);
 			addUI();
 			setuplvl(this.level);
@@ -129,7 +130,10 @@
 					enemy.body.velocity.x = enemy.speed;
 					enemy.direction = level_data.startdirection;
 					counter = 0;
-				};
+				}
+				else if (enemystack.length = 0) {
+					startwavebutton.visible = true;
+				}
 				counter++;
 			}
 		}
@@ -147,7 +151,7 @@
 		}
 	}	
 
-	function addUI(){ //add towers and other user interface objects
+	function addUI(){
 		var tower1 = Tower(10, 10, 'tower1');
 		tower1.inputEnabled = true;
 		tower1.events.onInputDown.add(copyAndDragTower, this);
