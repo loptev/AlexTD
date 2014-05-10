@@ -214,8 +214,11 @@
 		currently_dragging = true;
 		being_dragged = t;
 		marker = game.add.graphics();		
-	    marker.lineStyle(2, 0x000000, 1);
+	    // marker.lineStyle(2, 0x000000, 1);
+	    marker.beginFill(0x0BFF0B, 0.3)
 	    marker.drawRect(t.left, t.top, t.actualWidth, t.actualHeight);
+	    being_dragged.z = 13;
+	    being_dragged.bringToTop();
 
 		game.input.onDown.add(function(){ 
 			marker.destroy();
