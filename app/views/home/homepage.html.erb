@@ -24,7 +24,8 @@
 <% content_for :js do %>
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
-	var level_data, 
+	var level_data,
+		tile, 
 		map, 
 		layer, marker,
 		currently_dragging, being_dragged, 
@@ -39,7 +40,7 @@
 	Game.Preload.prototype = {
 		preload: function() {
 			game.load.spritesheet('startwavebutton', '<%= asset_path('startwave_button.png') %>', 158, 30);
-			game.load.tilemap('desert', '<%= asset_path('tiled_test.json') %>', null, Phaser.Tilemap.TILED_JSON);
+			game.load.tilemap('desert', '<%= asset_path('tilemap.json') %>', null, Phaser.Tilemap.TILED_JSON);
     		game.load.image('tile_image', '<%= asset_path('desert_tiles_small.png') %>');
 			game.physics.startSystem(Phaser.Physics.ARCADE);
 			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
@@ -104,6 +105,9 @@
 			detectors = game.add.group();
 			detectors.enableBody = true;
 			map.createFromObjects('detectors', 1, 'detector', 0, true, false, detectors);
+
+			map.setTileIndexCallback([1,2,3,9,10,11,17,18,19,20,21,28,29],isPlacable, this);
+
 			enemies = game.add.group();
 			towers = game.add.group();
 			game.physics.enable(towers, Phaser.Physics.ARCADE);
@@ -117,6 +121,7 @@
 			setuplvl(this.level);
 		},
 		update: function() {
+			game.physics.arcade.collide(towers, layer);
 			if (currently_dragging) {
 				marker.x = game.input.activePointer.worldX - 28;
 			    marker.y = game.input.activePointer.worldY - 28;				
@@ -143,7 +148,7 @@
 	function setuplvl(lvl) {
 		$.getJSON('<%= asset_path('levels.json') %>', function(data) {
 			level_data = data[lvl];
-			console.log(level_data);
+			// console.log(level_data);
 		});
 	}
 
@@ -234,6 +239,75 @@
 					game.input.onDown.removeAll();				
 				}
 			}, this);
+		}
+	}
+	function isPlacable(s, t) {
+		var placable = true;
+		var sby = s.y + s.height;
+		var srx = s.x + s.width;
+		tile = t;
+		switch(t.index) {
+			case 1: 
+				console.log("INSIDE THE SWITCH");
+				if ((srx>t.centerX) && (sby>t.centerY)){
+					placable = false;
+				};
+			case 2: 
+				console.log("INSIDE THE SWITCH");
+				if (srx > t.centerX){
+					placable = false;
+				};
+			case 3: 
+				console.log("INSIDE THE SWITCH");
+				if ((s.x < t.centerX) && (sby > t.centerY)){
+					placable = false;
+				};
+			case 9: 
+				console.log("INSIDE THE SWITCH");
+				if (srx > t.centerX){
+					placable = false;
+				};
+			case 10: 
+				console.log("INSIDE THE SWITCH");
+				placable = false;
+			case 11: 
+				console.log("INSIDE THE SWITCH");
+				if (s.x < t.centerX){
+					placable = false;
+				};
+			case 17: 
+				if ((srx > t.centerX) && (s.y < t.centerY)){
+					placable = false;
+				};
+			case 18: 
+				if (s.y < t.centerY){
+					placable = false;
+				};
+			case 19: 
+				if ((s.x < t.centerX) && (s.y < t.centerY)){
+					placable = false;
+				};
+			case 20: 
+				if ((s.x < t.centerX) || (s.y < t.centerY)){
+					placable = false;
+				};
+			case 21: 
+				if ((srx > t.centerX) || (s.y < t.centerY)){
+					placable = false;
+				};
+			case 28: 
+				if ((s.x < t.centerX) || (sby > t.centerY)){
+					placable = false;
+				};
+			case 29: 
+				if ((srx > t.centerX) || (sby > t.centerY)){
+					placable = false;
+				};
+		};
+		if (placable){
+			marker.beginFill(0x0BFF0B, 0.3);
+		} else {			
+			marker.beginFill(0xFF0000, 0.3);
 		}
 	}
 	var Tower = function(x, y, key) {
