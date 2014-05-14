@@ -231,9 +231,12 @@
 		    marker.drawRect(t.left, t.top, t.actualWidth, t.actualHeight);
 		    marker.z = 12;
 		    being_dragged.z = 13;
-
 			game.input.onDown.add(function(){
 				if (game.input.x>190 || game.input.y>80){
+					if (game.input.mouse.event.button == 2) {
+						game.input.mouse.event.preventDefault();
+		    			being_dragged.destroy();
+		    		};
 					marker.destroy();
 					currently_dragging=false;
 					game.input.onDown.removeAll();				
@@ -316,6 +319,7 @@
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.6;
+				tower.range = 300;
 				tower.doesDamage = 0.7;
 				tower.top = 4;
 				tower.left = 9;
@@ -325,7 +329,8 @@
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.9;
-				tower.doesDamage = 0.4;
+				tower.range = 150;
+				tower.doesDamage = 0.6;
 				tower.top = 12;
 				tower.left = 13;
 				tower.actualHeight = 40;
@@ -334,6 +339,7 @@
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.5;
+				tower.range = 600;
 				tower.doesDamage = 1;
 				tower.top = -1;
 				tower.left = 8;
