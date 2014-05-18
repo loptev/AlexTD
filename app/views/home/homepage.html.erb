@@ -25,12 +25,11 @@
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
 	var level_data,
-		tile, 
-		map, 
-		layer, marker, placable,
+		tile, map, 
+		ground, marker, placable,
 		currently_dragging, being_dragged, 
 		// Groups
-		detectors, paths, enemies, towers,
+		detectors, paths, enemies, towers, markers,
 		enemystack = [], 
 		counter = 100,
 		startwave, startwavebutton, wave = 0;
@@ -54,6 +53,7 @@
 			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 8);
+			game.load.spritesheet('placableBox','<%= asset_path('placableBox.png') %>', 35, 35, 2);
 		},
 		create: function() {
 			console.log("Preload State Started");
@@ -91,16 +91,16 @@
 			game.add.sprite(0, 0, 'background');
 			map = game.add.tilemap('desert');
 			map.addTilesetImage('Desert', 'tile_image');
-			layer = map.createLayer('Ground');
-			layer.resizeWorld();
-			paths = game.add.group();
+			ground = map.createLayer('Ground');
+			ground.resizeWorld();
 			
 			// Create Detectors
 			detectors = game.add.group();
 			detectors.enableBody = true;
 			map.createFromObjects('detectors', 1, 'detector', 0, true, false, detectors);
+			markers = game.add.group();
 
-			map.setTileIndexCallback([1,2,3,9,10,11,17,18,19,20,21,28,29],isPlacable, this);
+			map.setTileIndexCallback([1,2,3,9,10,11,17,18,19,20,21,28,29], isPlacable, this);
 
 			enemies = game.add.group();
 			towers = game.add.group();
@@ -115,11 +115,10 @@
 			setuplvl(this.level);
 		},
 		update: function() {
-			game.physics.arcade.collide(towers, layer);
+			game.physics.arcade.collide(marker, ground);
 			if (currently_dragging) {
 				being_dragged.reset(game.input.x-being_dragged.center.x, game.input.y-being_dragged.center.y);
-				marker.x = game.input.x-being_dragged.baseWidth/2+2.5;
-			    marker.y = game.input.y-being_dragged.baseHeight/2+4;
+				marker.reset(game.input.x-being_dragged.baseWidth/2+2.5, game.input.y-being_dragged.baseHeight/2+4);
 			}
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (startwave) {
@@ -216,12 +215,13 @@
 	}
 	function copyAndDragTower(tower){
 		if (!currently_dragging){
-			var t = Tower(tower.x, tower.y, tower.key);
 			currently_dragging = true;
-			being_dragged = t;
-			marker = game.add.graphics();
-		    marker.beginFill(0x0BFF0B, 0.3);
-		    marker.drawRect(0, 0, t.baseWidth, t.baseHeight);
+			placable = true;
+			being_dragged = Tower(tower.x, tower.y, tower.key);
+			marker = game.add.sprite(0, 0,'placableBox');
+			game.physics.enable(marker, Phaser.Physics.ARCADE);
+			marker.scale.x = being_dragged.baseWidth/marker.body.width
+			marker.scale.y = being_dragged.baseHeight/marker.body.height
 			game.input.onDown.add(function(){
 				if (placable==true && (game.input.x>190 || game.input.y>80)) {
 					if (game.input.mouse.event.button == 2) {
@@ -240,37 +240,35 @@
 		tile = t;
 		switch(t.index) {
 			case 1: 
-				if (((marker.x + s.baseWidth)>(t.worldX+14)) && ((marker.y + s.baseHeight)>(t.worldY+14))){
+				if (((marker.x + being_dragged.baseWidth)>(t.worldX+14)) && ((marker.y + being_dragged.baseHeight)>(t.worldY+14))){
 					placable = false;
 				};
 				break;
 			case 2: 
-				if ((marker.x + s.baseWidth) > (t.worldX+14)){
+				if ((marker.y + being_dragged.baseHeight) > (t.worldY+14)){
 					placable = false;
 				};
 				break;
 			case 3: 
-				if ((marker.x < (t.worldX+14)) && ((marker.y + s.baseHeight) > (t.worldY+14))) {
+				if ((marker.x < (t.worldX+14)) && ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
 					placable = false;
 				};
 				break;
-			case 9: 
-				// console.log("Right of marker: "+(marker.x + being_dragged.baseWidth));
-				// console.log("Left of wall: "+(t.worldX+14));
-				if ((marker.x + s.baseWidth) >= (t.worldX+14)){
+			case 9:
+				if ((marker.x + being_dragged.baseWidth) >= (t.worldX+14)){
 					placable = false;
 				};
 				break;
 			case 10: 
 				placable = false;
 				break;
-			case 11: 
+			case 11:
 				if (marker.x < (t.worldX+14)){
 					placable = false;
 				};
 				break;
 			case 17: 
-				if (((marker.x + s.baseWidth) > (t.worldX+14)) && (marker.y < (t.worldY+14))) {
+				if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) && (marker.y < (t.worldY+14))) {
 					placable = false;
 				};
 				break;
@@ -290,32 +288,27 @@
 				};
 				break;
 			case 21: 
-				if (((marker.x + s.baseWidth) > (t.worldX+14)) || (marker.y < (t.worldY+14))) {
+				if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) || (marker.y < (t.worldY+14))) {
 					placable = false;
 				};
 				break;
 			case 28: 
-				if ((marker.x < (t.worldX+14)) || ((marker.y + s.baseHeight) > (t.worldY+14))) {
+				if ((marker.x < (t.worldX+14)) || ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
 					placable = false;
 				};
 				break;
 			case 29: 
-				if (((marker.x + s.baseWidth) > (t.worldX+14)) || ((marker.y + s.baseHeight) > (t.worldY+14))) {
+				if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) || ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
 					placable = false;
 				};
 				break;
 		};
 		// var newRect = game.add.graphics();		
 		if (placable==true){
-			console.log("Green");
-		    // newRect.beginFill(0x0BFF0B, 0.3)
-		} else {			
-			console.log("Red");
-			// newRect.beginFill(0xFF0000, 0.3);
+			marker.frame = 0;
+		} else {
+			marker.frame = 1;
 		}
-	 //    newRect.drawRect(marker.x, marker.y, being_dragged.baseWidth, being_dragged.baseHeight);
-		// marker.destroy();
-		// marker = newRect;
 	}
 	var Tower = function(x, y, key) {
 		var tower;
