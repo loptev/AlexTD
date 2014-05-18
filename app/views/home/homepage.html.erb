@@ -27,7 +27,7 @@
 	var level_data,
 		tile, 
 		map, 
-		layer, marker,
+		layer, marker, placable,
 		currently_dragging, being_dragged, 
 		// Groups
 		detectors, paths, enemies, towers,
@@ -54,12 +54,6 @@
 			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 8);
-			game.load.image('corner1', '<%= asset_path('corner_path_1.png') %>');
-			game.load.image('corner2', '<%= asset_path('corner_path_2.png') %>');
-			game.load.image('corner3', '<%= asset_path('corner_path_3.png') %>');
-			game.load.image('corner4', '<%= asset_path('corner_path_4.png') %>');
-			game.load.image('horizontal', '<%= asset_path('horizontal_path.png') %>');
-			game.load.image('vertical', '<%= asset_path('vertical_path.png') %>');
 		},
 		create: function() {
 			console.log("Preload State Started");
@@ -72,7 +66,7 @@
 			console.log("Titlescreen State Started");
 			game.add.sprite(0, 0, 'titleback');
 			game.add.button(game.world.centerX - 79, game.world.centerY - 90, 'playbutton', function() { 
-				game.state.start('Actualgame', true, false, 1); 
+				game.state.start('ActualGame', true, false, 1); 
 			}, this, 0, 1, 2);
 		}
 	};
@@ -83,12 +77,12 @@
 			this.game.add.sprite(0, 0, 'lvlselectback');
 		}
 	};	
-	Game.Actualgame = function(game) {
+	Game.ActualGame = function(game) {
 		this.level;
 	};
-	Game.Actualgame.prototype = {
+	Game.ActualGame.prototype = {
 		init: function (level) {
-			console.log("Actualgame State Started");
+			console.log("ActualGame State Started");
 			this.level = level;
 			currently_dragging = false;
 		},
@@ -111,7 +105,7 @@
 			enemies = game.add.group();
 			towers = game.add.group();
 			game.physics.enable(towers, Phaser.Physics.ARCADE);
-			startwavebutton = game.add.button(10, 100, 'startwavebutton', function() { 
+			startwavebutton = game.add.button(10, 80, 'startwavebutton', function() { 
 				startwave = true;
 				buildwave(wave); 
 				wave++;
@@ -123,9 +117,9 @@
 		update: function() {
 			game.physics.arcade.collide(towers, layer);
 			if (currently_dragging) {
-				marker.x = game.input.activePointer.worldX - 28;
-			    marker.y = game.input.activePointer.worldY - 28;				
-				being_dragged.reset(game.input.x-being_dragged.width/2, game.input.y-being_dragged.height/2);
+				being_dragged.reset(game.input.x-being_dragged.center.x, game.input.y-being_dragged.center.y);
+				marker.x = game.input.x-being_dragged.baseWidth/2+2.5;
+			    marker.y = game.input.y-being_dragged.baseHeight/2+4;
 			}
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (startwave) {
@@ -225,14 +219,11 @@
 			var t = Tower(tower.x, tower.y, tower.key);
 			currently_dragging = true;
 			being_dragged = t;
-			marker = game.add.graphics();		
-		    // marker.lineStyle(2, 0x000000, 1);
-		    marker.beginFill(0x0BFF0B, 0.3)
-		    marker.drawRect(t.left, t.top, t.actualWidth, t.actualHeight);
-		    marker.z = 12;
-		    being_dragged.z = 13;
+			marker = game.add.graphics();
+		    marker.beginFill(0x0BFF0B, 0.3);
+		    marker.drawRect(0, 0, t.baseWidth, t.baseHeight);
 			game.input.onDown.add(function(){
-				if (game.input.x>190 || game.input.y>80){
+				if (placable==true && (game.input.x>190 || game.input.y>80)) {
 					if (game.input.mouse.event.button == 2) {
 						game.input.mouse.event.preventDefault();
 		    			being_dragged.destroy();
@@ -245,73 +236,86 @@
 		}
 	}
 	function isPlacable(s, t) {
-		var placable = true;
-		var sby = s.y + s.height;
-		var srx = s.x + s.width;
+		placable = true;
 		tile = t;
 		switch(t.index) {
 			case 1: 
-				console.log("INSIDE THE SWITCH");
-				if ((srx>t.centerX) && (sby>t.centerY)){
+				if (((marker.x + s.baseWidth)>(t.worldX+14)) && ((marker.y + s.baseHeight)>(t.worldY+14))){
 					placable = false;
 				};
+				break;
 			case 2: 
-				console.log("INSIDE THE SWITCH");
-				if (srx > t.centerX){
+				if ((marker.x + s.baseWidth) > (t.worldX+14)){
 					placable = false;
 				};
+				break;
 			case 3: 
-				console.log("INSIDE THE SWITCH");
-				if ((s.x < t.centerX) && (sby > t.centerY)){
+				if ((marker.x < (t.worldX+14)) && ((marker.y + s.baseHeight) > (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 			case 9: 
-				console.log("INSIDE THE SWITCH");
-				if (srx > t.centerX){
+				// console.log("Right of marker: "+(marker.x + being_dragged.baseWidth));
+				// console.log("Left of wall: "+(t.worldX+14));
+				if ((marker.x + s.baseWidth) >= (t.worldX+14)){
 					placable = false;
 				};
+				break;
 			case 10: 
-				console.log("INSIDE THE SWITCH");
 				placable = false;
+				break;
 			case 11: 
-				console.log("INSIDE THE SWITCH");
-				if (s.x < t.centerX){
+				if (marker.x < (t.worldX+14)){
 					placable = false;
 				};
+				break;
 			case 17: 
-				if ((srx > t.centerX) && (s.y < t.centerY)){
+				if (((marker.x + s.baseWidth) > (t.worldX+14)) && (marker.y < (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 			case 18: 
-				if (s.y < t.centerY){
+				if (marker.y < (t.worldY+14)) {
 					placable = false;
 				};
+				break;
 			case 19: 
-				if ((s.x < t.centerX) && (s.y < t.centerY)){
+				if ((marker.x < (t.worldX+14)) && (marker.y < (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 			case 20: 
-				if ((s.x < t.centerX) || (s.y < t.centerY)){
+				if ((marker.x < (t.worldX+14)) || (marker.y < (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 			case 21: 
-				if ((srx > t.centerX) || (s.y < t.centerY)){
+				if (((marker.x + s.baseWidth) > (t.worldX+14)) || (marker.y < (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 			case 28: 
-				if ((s.x < t.centerX) || (sby > t.centerY)){
+				if ((marker.x < (t.worldX+14)) || ((marker.y + s.baseHeight) > (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 			case 29: 
-				if ((srx > t.centerX) || (sby > t.centerY)){
+				if (((marker.x + s.baseWidth) > (t.worldX+14)) || ((marker.y + s.baseHeight) > (t.worldY+14))) {
 					placable = false;
 				};
+				break;
 		};
-		if (placable){
-			marker.beginFill(0x0BFF0B, 0.3);
+		// var newRect = game.add.graphics();		
+		if (placable==true){
+			console.log("Green");
+		    // newRect.beginFill(0x0BFF0B, 0.3)
 		} else {			
-			marker.beginFill(0xFF0000, 0.3);
+			console.log("Red");
+			// newRect.beginFill(0xFF0000, 0.3);
 		}
+	 //    newRect.drawRect(marker.x, marker.y, being_dragged.baseWidth, being_dragged.baseHeight);
+		// marker.destroy();
+		// marker = newRect;
 	}
 	var Tower = function(x, y, key) {
 		var tower;
@@ -321,34 +325,30 @@
 				tower.speed = 0.6;
 				tower.range = 300;
 				tower.doesDamage = 0.7;
-				tower.top = 4;
-				tower.left = 9;
-				tower.actualHeight = 50;
-				tower.actualWidth = 40;
+				tower.center = { "x": 28, "y": 35 };
+				tower.baseHeight = 33;
+				tower.baseWidth = 37;
 				break;
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.9;
 				tower.range = 150;
 				tower.doesDamage = 0.6;
-				tower.top = 12;
-				tower.left = 13;
-				tower.actualHeight = 40;
-				tower.actualWidth = 30;
+				tower.center = { "x": 27, "y": 35 };
+				tower.baseHeight = 24;
+				tower.baseWidth = 25;
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.5;
 				tower.range = 600;
 				tower.doesDamage = 1;
-				tower.top = -1;
-				tower.left = 8;
-				tower.actualHeight = 56;
-				tower.actualWidth = 40;
+				tower.center = { "x": 26, "y": 35 };
+				tower.baseHeight = 29;
+				tower.baseWidth = 36;
 				break;
 			}
 		game.physics.enable(tower, Phaser.Physics.ARCADE);
-		// tower.body.immovable = true;
 		towers.add(tower);
 		return tower;		
 	}
@@ -421,7 +421,7 @@
 	this.game.state.add('Preload', Game.Preload);
 	this.game.state.add('Titlescreen', Game.Titlescreen);
 	this.game.state.add('Lvlselect', Game.Lvlselect);
-	this.game.state.add('Actualgame', Game.Actualgame);
+	this.game.state.add('ActualGame', Game.ActualGame);
 	this.game.state.start('Preload');
 </script>
 <% end %>
