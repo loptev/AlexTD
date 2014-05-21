@@ -165,7 +165,6 @@
 		var tower3 = Tower(130, 10, 'tower3');
 		tower3.inputEnabled = true;
 		tower3.events.onInputDown.add(copyAndDragTower, this);
-
 	}
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
@@ -222,6 +221,7 @@
 			currently_dragging = true;
 			placable = true;
 			being_dragged = Tower(tower.x, tower.y, tower.key);
+			towers.add(being_dragged);
 			marker = game.add.sprite(0, 0,'placableBox');
 			game.physics.enable(marker, Phaser.Physics.ARCADE);
 			marker.scale.x = being_dragged.baseWidth/marker.body.width
@@ -354,7 +354,6 @@
 				break;
 			}
 		game.physics.enable(tower, Phaser.Physics.ARCADE);
-		towers.add(tower);
 		return tower;		
 	}
 	var Bullet = function(tower, enemy) {
