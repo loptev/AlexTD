@@ -135,7 +135,15 @@
 			if (currently_dragging) {
 				being_dragged.reset(game.input.x-being_dragged.center.x, game.input.y-being_dragged.center.y);
 				marker.reset(game.input.x-being_dragged.baseWidth/2+2.5, game.input.y-being_dragged.baseHeight/2+4);
-			}
+				if (game.physics.arcade.overlap(marker, towers, function(){placable=false})){
+					marker.frame = 1;
+				} else {
+					if (placable) {
+						marker.frame = 0;
+					}
+					placable=true;
+				};
+			};
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (startwave) {
 				if (enemystack.length > 0) {
@@ -232,7 +240,6 @@
 			currently_dragging = true;
 			placable = true;
 			being_dragged = Tower(tower.x, tower.y, tower.key);
-			towers.add(being_dragged);
 			marker = game.add.sprite(0, 0,'placableBox');
 			game.physics.enable(marker, Phaser.Physics.ARCADE);
 			marker.scale.x = being_dragged.baseWidth/marker.body.width
@@ -244,6 +251,7 @@
 		    			being_dragged.destroy();
 		    		};
 					marker.destroy();
+					towers.add(being_dragged);
 					currently_dragging=false;
 					game.input.onDown.removeAll();				
 				}
@@ -318,19 +326,14 @@
 				};
 				break;
 		};
-		// var newRect = game.add.graphics();		
-		if (placable==true){
-			marker.frame = 0;
-		} else {
+		if (placable==false) {
 			marker.frame = 1;
 		}
 	}
-
 	function shoot(tower, enemy) {
 		var bullet = Bullet(tower, enemy);
 		//USE => this.game.physics.moveToObject(bullet, this.player, BULLETSPEED);
 	}
-
 	var Tower = function(x, y, key) {
 		var tower;
 		switch(key) {
