@@ -27,7 +27,12 @@
 	var level_data,
 		tile, map, 
 		ground, marker, placable,
-		currently_dragging, being_dragged, 
+		currently_dragging, being_dragged,
+		startmoney = 400, 
+		currentmoney, moneysymbol, moneysymboldos,
+		currentmoneytext, dragtext,
+		tower1, tower2, tower3,
+		//this.flap_energy_txt = this.game.add.text(this.game.camera.width/2, 0, "Text", style);
 		// Groups
 		detectors, paths, enemies, towers, markers,
 		enemystack = [], 
@@ -42,13 +47,13 @@
 			game.load.tilemap('desert', '<%= asset_path('tilemap.json') %>', null, Phaser.Tilemap.TILED_JSON);
     		game.load.image('tile_image', '<%= asset_path('desert_tiles_small.png') %>');
 			game.physics.startSystem(Phaser.Physics.ARCADE);
+			game.load.image('money', '<%= asset_path('foolsgold.png') %>');
 			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
 			game.load.spritesheet('lvlselect', '<%= asset_path('levelselect_button.png') %>', 158, 30);
 			game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
 			game.load.image('lvlselectback', '<%= asset_path('levelselect.png') %>');
 			game.load.spritesheet('levelone', '<%= asset_path('button_1.png') %>', 90, 90, 2);
 			game.load.image('detector', '<%= asset_path('detector.png') %>');
-			game.load.image('background', '<%= asset_path('grass1.jpg') %>');
 			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
 			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
 			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
@@ -59,7 +64,7 @@
 			game.load.spritesheet('bullet1', '<%= asset_path('Bullet1.png') %>', 10, 10, 9);
 			//Bullet1 goes with tower1
 			game.load.spritesheet('bullet2', '<%= asset_path('Bullet2.png') %>', 10, 10, 9);
-			//Bullet2 does not go with a tower yet
+			//Bullet2 does not go with a tower
 			game.load.spritesheet('bullet3', '<%= asset_path('Bullet3.png') %>', 10, 10, 9);
 			//Bullet3 goes with tower2
 			game.load.spritesheet('bullet4', '<%= asset_path('Bullet4.png') %>', 10, 10, 9);
@@ -129,6 +134,13 @@
 			}, this, 0, 1, 2);
 			addUI();
 			setuplvl(this.level);
+
+			currentmoney = startmoney;
+			this.currentmoneytext = this.game.add.text(700, 0, currentmoney);
+			moneysymbol = game.add.sprite(740, 4, 'money');
+			moneysymboldos = game.add.sprite(450, 4, 'money');
+			moneysymboldos.visible = false;
+			dragtext = this.game.add.text(200, 0, '');
 		},
 		update: function() {
 			game.physics.arcade.collide(marker, ground);
@@ -160,6 +172,13 @@
 					startwave = false;
 				}
 			}
+			this.currentmoneytext.text = currentmoney;
+			if (currentmoney < 100) {
+				moneysymbol.x = 725;
+			}
+			if (currentmoney < 10000 && currentmoney > 999) {
+				moneysymbol.x = 755;
+			}
 		}
 	};
 	function setuplvl(lvl) {
@@ -175,15 +194,39 @@
 	}	
 
 	function addUI(){
-		var tower1 = Tower(10, 10, 'tower1');
+		tower1 = Tower(10, 10, 'tower1');
 		tower1.inputEnabled = true;
 		tower1.events.onInputDown.add(copyAndDragTower, this);
-		var tower2 = Tower(70, 10, 'tower2');
+		tower1.events.onInputOver.add(function(){
+			dragtext.text = 'This item costs 350   !';
+			moneysymboldos.visible = true;
+		});
+		tower1.events.onInputOut.add(function(){
+			dragtext.text = '';
+			moneysymboldos.visible = false;
+		});
+		tower2 = Tower(70, 10, 'tower2');
 		tower2.inputEnabled = true;
 		tower2.events.onInputDown.add(copyAndDragTower, this);
-		var tower3 = Tower(130, 10, 'tower3');
+		tower2.events.onInputOver.add(function(){
+			dragtext.text = 'This item costs 250   !';
+			moneysymboldos.visible = true;
+		});
+		tower2.events.onInputOut.add(function(){
+			dragtext.text = '';
+			moneysymboldos.visible = false;
+		});
+		tower3 = Tower(130, 10, 'tower3');
 		tower3.inputEnabled = true;
 		tower3.events.onInputDown.add(copyAndDragTower, this);
+		tower3.events.onInputOver.add(function(){
+			dragtext.text = 'This item costs 525   !';
+			moneysymboldos.visible = true;
+	});
+		tower3.events.onInputOut.add(function(){
+			dragtext.text = '';
+			moneysymboldos.visible = false;
+		});
 	}
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
@@ -236,7 +279,7 @@
 		}
 	}
 	function copyAndDragTower(tower){
-		if (!currently_dragging){
+		if (!currently_dragging && tower.cost <= currentmoney){
 			currently_dragging = true;
 			placable = true;
 			being_dragged = Tower(tower.x, tower.y, tower.key);
@@ -253,7 +296,8 @@
 					marker.destroy();
 					towers.add(being_dragged);
 					currently_dragging=false;
-					game.input.onDown.removeAll();				
+					game.input.onDown.removeAll();		
+					currentmoney -= being_dragged.cost;		
 				}
 			}, this);
 		}
@@ -331,7 +375,18 @@
 		}
 	}
 	function shoot(tower, enemy) {
-		var bullet = Bullet(tower, enemy);
+		var bullet;
+		switch(tower.bullettype) {
+			case 1:
+				bullet = game.add.sprite(tower.x, tower.y, 'bullet1');
+			break;
+			case 2:
+				bullet = game.add.sprite(tower.x, tower.y, 'bullet2');
+			break;
+			case 4:
+				bullet = game.add.sprite(tower.x, tower.y, 'bullet4');
+			break;
+		}
 		//USE => this.game.physics.moveToObject(bullet, this.player, BULLETSPEED);
 	}
 	var Tower = function(x, y, key) {
@@ -346,6 +401,7 @@
 				tower.baseHeight = 33;
 				tower.baseWidth = 37;
 				tower.bullettype = 1;
+				tower.cost = 350;
 				break;
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
@@ -356,6 +412,7 @@
 				tower.baseHeight = 24;
 				tower.baseWidth = 25;
 				tower.bullettype = 2;
+				tower.cost = 250;
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
@@ -365,7 +422,8 @@
 				tower.center = { "x": 26, "y": 35 };
 				tower.baseHeight = 29;
 				tower.baseWidth = 36;
-				tower.bullettype = 3;
+				tower.bullettype = 4;
+				tower.cost = 525;
 				break;
 			}
 		game.physics.enable(tower, Phaser.Physics.ARCADE);
@@ -384,6 +442,7 @@
 				bullet = this.game.add.sprite(tower.body.center.x, tower.body.center.y-10, 'bullet3');
 			break;
 		}
+
 	}
 	var Path = function(x, y, type) {
 		var path;
