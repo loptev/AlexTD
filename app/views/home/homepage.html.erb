@@ -38,17 +38,16 @@
 	Game.Preload = function(game){};
 	Game.Preload.prototype = {
 		preload: function() {
-			game.load.spritesheet('startwavebutton', '<%= asset_path('startwave_button.png') %>', 158, 30);
+			game.load.spritesheet('startwavebutton', '<%= asset_path('startwave_button.png') %>', 158, 30, 3);
 			game.load.tilemap('desert', '<%= asset_path('tilemap.json') %>', null, Phaser.Tilemap.TILED_JSON);
     		game.load.image('tile_image', '<%= asset_path('desert_tiles_small.png') %>');
 			game.physics.startSystem(Phaser.Physics.ARCADE);
-			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
-			game.load.spritesheet('lvlselect', '<%= asset_path('levelselect_button.png') %>', 158, 30);
+			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30, 3);
+			game.load.spritesheet('lvlselect', '<%= asset_path('levelselect_button.png') %>', 158, 30, 3);
 			game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
 			game.load.image('lvlselectback', '<%= asset_path('levelselect.png') %>');
 			game.load.spritesheet('levelone', '<%= asset_path('button_1.png') %>', 90, 90, 2);
 			game.load.image('detector', '<%= asset_path('detector.png') %>');
-			game.load.image('background', '<%= asset_path('grass1.jpg') %>');
 			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
 			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
 			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
@@ -57,13 +56,9 @@
 			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 8);
 			game.load.spritesheet('placableBox','<%= asset_path('placableBox.png') %>', 35, 35, 2);
 			game.load.spritesheet('bullet1', '<%= asset_path('Bullet1.png') %>', 10, 10, 9);
-			//Bullet1 goes with tower1
 			game.load.spritesheet('bullet2', '<%= asset_path('Bullet2.png') %>', 10, 10, 9);
-			//Bullet2 does not go with a tower yet
 			game.load.spritesheet('bullet3', '<%= asset_path('Bullet3.png') %>', 10, 10, 9);
-			//Bullet3 goes with tower2
 			game.load.spritesheet('bullet4', '<%= asset_path('Bullet4.png') %>', 10, 10, 9);
-			//Bullet4 goes with tower3
 		},
 		create: function() {
 			console.log("Preload State Started");
@@ -104,7 +99,6 @@
 		},
 		create: function() {
 			// Create Background and Map
-			game.add.sprite(0, 0, 'background');
 			map = game.add.tilemap('desert');
 			map.addTilesetImage('Desert', 'tile_image');
 			ground = map.createLayer('Ground');
@@ -116,7 +110,7 @@
 			map.createFromObjects('detectors', 4, 'detector', 0, true, false, detectors);
 			markers = game.add.group();
 
-			map.setTileIndexCallback([1,2,3,9,10,11,17,18,19,20,21,28,29], isPlacable, this);
+			// map.setTileIndexCallback([1,2,3,9,10,11,17,18,19,20,21,28,29], isPlacable, this);
 
 			enemies = game.add.group();
 			towers = game.add.group();
@@ -135,13 +129,10 @@
 			if (currently_dragging) {
 				being_dragged.reset(game.input.x-being_dragged.center.x, game.input.y-being_dragged.center.y);
 				marker.reset(game.input.x-being_dragged.baseWidth/2+2.5, game.input.y-being_dragged.baseHeight/2+4);
-				if (game.physics.arcade.overlap(marker, towers, function(){placable=false})){
-					marker.frame = 1;
+				if (isPlacable(map.getTileWorldXY(game.input.x, game.input.y))) {
+					marker.frame = 0;
 				} else {
-					if (placable) {
-						marker.frame = 0;
-					}
-					placable=true;
+					marker.frame = 1;
 				};
 			};
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
@@ -258,77 +249,101 @@
 			}, this);
 		}
 	}
-	function isPlacable(s, t) {
+	function isPlacable(t) {
 		placable = true;
-		tile = t;
+		if (game.physics.arcade.overlap(marker, towers, function(){placable=false})){
+		} else {
 		switch(t.index) {
 			case 1: 
 				if (((marker.x + being_dragged.baseWidth)>(t.worldX+14)) && ((marker.y + being_dragged.baseHeight)>(t.worldY+14))){
 					placable = false;
+				} else {
+					placable = true;
 				};
 				break;
-			case 2: 
-				if ((marker.y + being_dragged.baseHeight) > (t.worldY+14)){
+				case 2: 
+					if ((marker.y + being_dragged.baseHeight) > (t.worldY+14)){
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 3: 
+					if ((marker.x < (t.worldX+14)) && ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 9:
+					if ((marker.x + being_dragged.baseWidth) >= (t.worldX+14)){
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 10: 
 					placable = false;
-				};
-				break;
-			case 3: 
-				if ((marker.x < (t.worldX+14)) && ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
-					placable = false;
-				};
-				break;
-			case 9:
-				if ((marker.x + being_dragged.baseWidth) >= (t.worldX+14)){
-					placable = false;
-				};
-				break;
-			case 10: 
-				placable = false;
-				break;
-			case 11:
-				if (marker.x < (t.worldX+14)){
-					placable = false;
-				};
-				break;
-			case 17: 
-				if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) && (marker.y < (t.worldY+14))) {
-					placable = false;
-				};
-				break;
-			case 18: 
-				if (marker.y < (t.worldY+14)) {
-					placable = false;
-				};
-				break;
-			case 19: 
-				if ((marker.x < (t.worldX+14)) && (marker.y < (t.worldY+14))) {
-					placable = false;
-				};
-				break;
-			case 20: 
-				if ((marker.x < (t.worldX+14)) || (marker.y < (t.worldY+14))) {
-					placable = false;
-				};
-				break;
-			case 21: 
-				if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) || (marker.y < (t.worldY+14))) {
-					placable = false;
-				};
-				break;
-			case 28: 
-				if ((marker.x < (t.worldX+14)) || ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
-					placable = false;
-				};
-				break;
-			case 29: 
-				if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) || ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
-					placable = false;
-				};
-				break;
+					break;
+				case 11:
+					if (marker.x < (t.worldX+14)){
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 17: 
+					if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) && (marker.y < (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 18: 
+					if (marker.y < (t.worldY+14)) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 19: 
+					if ((marker.x < (t.worldX+14)) && (marker.y < (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 20: 
+					if ((marker.x < (t.worldX+14)) || (marker.y < (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 21: 
+					if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) || (marker.y < (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 28: 
+					if ((marker.x < (t.worldX+14)) || ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+				case 29: 
+					if (((marker.x + being_dragged.baseWidth) > (t.worldX+14)) || ((marker.y + being_dragged.baseHeight) > (t.worldY+14))) {
+						placable = false;
+					} else {
+						placable = true;
+					};
+					break;
+			};
 		};
-		if (placable==false) {
-			marker.frame = 1;
-		}
+		return placable;
 	}
 	function shoot(tower, enemy) {
 		var bullet = Bullet(tower, enemy);
@@ -340,7 +355,7 @@
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.6;
-				tower.range = 300;
+				tower.range = 180;
 				tower.doesDamage = 0.7;
 				tower.center = { "x": 28, "y": 35 };
 				tower.baseHeight = 33;
@@ -350,7 +365,7 @@
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.9;
-				tower.range = 150;
+				tower.range = 120;
 				tower.doesDamage = 0.6;
 				tower.center = { "x": 27, "y": 35 };
 				tower.baseHeight = 24;
@@ -360,7 +375,7 @@
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.5;
-				tower.range = 600;
+				tower.range = 250;
 				tower.doesDamage = 1;
 				tower.center = { "x": 26, "y": 35 };
 				tower.baseHeight = 29;
