@@ -29,7 +29,7 @@
 		ground, marker, placable,
 		currently_dragging, being_dragged, 
 		// Groups
-		detectors, paths, enemies, towers, markers,
+		detectors, paths, enemies, towers, markers, ranges,
 		enemystack = [], 
 		counter = 100,
 		startwave, startwavebutton, wave = 0;
@@ -107,6 +107,8 @@
 			// Create Detectors
 			detectors = game.add.group();
 			detectors.enableBody = true;
+			ranges = game.add.group();
+			ranges.enableBody = true;
 			map.createFromObjects('detectors', 4, 'detector', 0, true, false, detectors);
 			markers = game.add.group();
 
@@ -135,6 +137,7 @@
 					marker.frame = 1;
 				};
 			};
+			game.physics.arcade.overlap(enemies, ranges, isInRange, null, this);
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
 			if (startwave) {
 				if (enemystack.length > 0) {
@@ -175,6 +178,9 @@
 		var tower3 = Tower(130, 10, 'tower3');
 		tower3.inputEnabled = true;
 		tower3.events.onInputDown.add(copyAndDragTower, this);
+	}
+	function isInRange(enemy, rand) {
+		alert("Is In Range");
 	}
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
@@ -241,6 +247,7 @@
 						game.input.mouse.event.preventDefault();
 		    			being_dragged.destroy();
 		    		};
+		    		makeDebugCircle(being_dragged);
 					marker.destroy();
 					towers.add(being_dragged);
 					currently_dragging=false;
@@ -248,6 +255,12 @@
 				}
 			}, this);
 		}
+	}
+	function makeDebugCircle(tower){
+		tower.radius = new Phaser.Circle(tower.bulletStart.x(), tower.bulletStart.y(), tower.range);
+		game.debug.geom(tower.radius,'rgba(255, 255, 25, 0.7)');
+		tower.radius.tower = tower;
+		ranges.add(tower.radius);
 	}
 	function isPlacable(t) {
 		placable = true;
@@ -355,9 +368,10 @@
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.6;
-				tower.range = 180;
+				tower.range = 210;
 				tower.doesDamage = 0.7;
 				tower.center = { "x": 28, "y": 35 };
+				tower.bulletStart = { "x": function (){ return tower.x + 28 }, "y": function(){ return tower.y + 26 } };
 				tower.baseHeight = 33;
 				tower.baseWidth = 37;
 				tower.bullettype = 1;
@@ -365,9 +379,10 @@
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.9;
-				tower.range = 120;
+				tower.range = 180;
 				tower.doesDamage = 0.6;
 				tower.center = { "x": 27, "y": 35 };
+				tower.bulletStart = { "x": function(){ return tower.x + 28 }, "y": function(){ return tower.y + 27 } };
 				tower.baseHeight = 24;
 				tower.baseWidth = 25;
 				tower.bullettype = 2;
@@ -375,9 +390,10 @@
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.5;
-				tower.range = 250;
+				tower.range = 300;
 				tower.doesDamage = 1;
 				tower.center = { "x": 26, "y": 35 };
+				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20} };
 				tower.baseHeight = 29;
 				tower.baseWidth = 36;
 				tower.bullettype = 3;
