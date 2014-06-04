@@ -25,14 +25,13 @@
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
 	var level_data,
-		tile, map, 
+		tile, map, lives,
 		ground, marker, placable,
 		currently_dragging, being_dragged,
 		startmoney = 400, 
-		currentmoney, moneysymbol, moneysymboldos,
-		currentmoneytext, dragtext,
+		currentmoney, moneysymbol, moneysymboldos, livessymbol,
+		currentmoneytext, dragtext, livestext,
 		tower1, tower2, tower3,
-		//this.flap_energy_txt = this.game.add.text(this.game.camera.width/2, 0, "Text", style);
 		// Groups
 		detectors, paths, enemies, towers, markers,
 		enemystack = [], 
@@ -48,6 +47,7 @@
     		game.load.image('tile_image', '<%= asset_path('desert_tiles_small.png') %>');
 			game.physics.startSystem(Phaser.Physics.ARCADE);
 			game.load.image('money', '<%= asset_path('foolsgold.png') %>');
+			game.load.image('lifeheart', '<%= asset_path('heartupdated.png') %>');
 			game.load.spritesheet('playbutton', '<%= asset_path('PlayButton.png') %>', 158, 30);
 			game.load.spritesheet('lvlselect', '<%= asset_path('levelselect_button.png') %>', 158, 30);
 			game.load.image('titleback', '<%= asset_path('titlebackground.png') %>');
@@ -109,6 +109,7 @@
 		},
 		create: function() {
 			// Create Background and Map
+			game.physics.setBoundsToWorld();
 			game.add.sprite(0, 0, 'background');
 			map = game.add.tilemap('desert');
 			map.addTilesetImage('Desert', 'tile_image');
@@ -136,8 +137,11 @@
 			setuplvl(this.level);
 
 			currentmoney = startmoney;
+			lives = 30-(this.level*5);
 			this.currentmoneytext = this.game.add.text(700, 0, currentmoney);
+			livestext = this.game.add.text(715, 30, lives);
 			moneysymbol = game.add.sprite(740, 4, 'money');
+			livessymbol = game.add.sprite(742, 34, 'lifeheart');
 			moneysymboldos = game.add.sprite(450, 4, 'money');
 			moneysymboldos.visible = false;
 			dragtext = this.game.add.text(200, 0, '');
@@ -179,6 +183,7 @@
 			if (currentmoney < 10000 && currentmoney > 999) {
 				moneysymbol.x = 755;
 			}
+			livestext.text = lives;
 		}
 	};
 	function setuplvl(lvl) {
@@ -389,6 +394,10 @@
 		}
 		//USE => this.game.physics.moveToObject(bullet, this.player, BULLETSPEED);
 	}
+	function enemyout(enemy) {
+		enemy.kill();
+		lives = lives-1;
+	}
 	var Tower = function(x, y, key) {
 		var tower;
 		switch(key) {
@@ -503,8 +512,21 @@
 				enemy.speed = 50;
 				break;
 		}
-		enemy.direction = null;
 		game.physics.enable(enemy, Phaser.Physics.ARCADE);
+		enemy.checkWorldBounds = true;
+		enemy.events.onOutOfBounds.add(enemyout, this );
+		//enemy.outOfBoundsKill = true;
+		enemy.direction = null;
+		
+		// enemy.events.onKilled.add(function() {
+		// 	console.log('this 1st thing happened');
+		// 	if (enemy.x > 790) {
+		// 		console.log('this happened');
+		// 		lives = lives-1;
+		// 		console.log('this other thing happened');
+		// 	}
+		// 	console.log('this last thing happened');
+		// });
 		enemies.add(enemy);
 		return enemy;
 	}
