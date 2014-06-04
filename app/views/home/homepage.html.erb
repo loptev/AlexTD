@@ -61,6 +61,7 @@
 			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 8);
 			game.load.spritesheet('placableBox','<%= asset_path('placableBox.png') %>', 35, 35, 2);
+			game.load.spritesheet('range', '<%= asset_path('range.png') %>', 35, 35, 2);
 			game.load.spritesheet('bullet1', '<%= asset_path('Bullet1.png') %>', 10, 10, 9);
 			game.load.spritesheet('bullet2', '<%= asset_path('Bullet2.png') %>', 10, 10, 9);
 			//Bullet2 does not go with a tower
@@ -143,6 +144,7 @@
 			if (currently_dragging) {
 				being_dragged.reset(game.input.x-being_dragged.center.x, game.input.y-being_dragged.center.y);
 				marker.reset(game.input.x-being_dragged.baseWidth/2+2.5, game.input.y-being_dragged.baseHeight/2+4);
+				being_dragged.radius.reset(game.input.x-being_dragged.radius.width/2,game.input.y-being_dragged.radius.width/2);
 				if (isPlacable(map.getTileWorldXY(game.input.x, game.input.y))) {
 					marker.frame = 0;
 				} else {
@@ -192,9 +194,10 @@
 		tower1.inputEnabled = true;
 		tower1.events.onInputDown.add(copyAndDragTower, this);
 		tower1.events.onInputOver.add(function(){
-			dragtext.text = 'This item costs 350   !';
+			dragtext.text = 'This item costs ' + tower1.cost + '   !';
 			moneysymboldos.visible = true;
 		});
+		tower1.radius.destroy();
 		tower1.events.onInputOut.add(function(){
 			dragtext.text = '';
 			moneysymboldos.visible = false;
@@ -203,9 +206,10 @@
 		tower2.inputEnabled = true;
 		tower2.events.onInputDown.add(copyAndDragTower, this);
 		tower2.events.onInputOver.add(function(){
-			dragtext.text = 'This item costs 250   !';
+			dragtext.text = 'This item costs ' + tower2.cost + '   !';
 			moneysymboldos.visible = true;
 		});
+		tower2.radius.destroy();
 		tower2.events.onInputOut.add(function(){
 			dragtext.text = '';
 			moneysymboldos.visible = false;
@@ -214,9 +218,10 @@
 		tower3.inputEnabled = true;
 		tower3.events.onInputDown.add(copyAndDragTower, this);
 		tower3.events.onInputOver.add(function(){
-			dragtext.text = 'This item costs 525   !';
+			dragtext.text = 'This item costs ' + tower3.cost + '   !';
 			moneysymboldos.visible = true;
-	});
+		});
+		tower3.radius.destroy();
 		tower3.events.onInputOut.add(function(){
 			dragtext.text = '';
 			moneysymboldos.visible = false;
@@ -279,6 +284,7 @@
 		if (!currently_dragging && tower.cost <= currentmoney){
 			currently_dragging = true;
 			placable = true;
+			toggleRanges(currently_dragging);
 			being_dragged = Tower(tower.x, tower.y, tower.key);
 			marker = game.add.sprite(0, 0,'placableBox');
 			game.physics.enable(marker, Phaser.Physics.ARCADE);
@@ -290,7 +296,7 @@
 						game.input.mouse.event.preventDefault();
 		    			being_dragged.destroy();
 		    		};
-		    		makeDebugCircle(being_dragged);
+		    		toggleRanges(false);
 					marker.destroy();
 					towers.add(being_dragged);
 					currently_dragging=false;
@@ -300,11 +306,24 @@
 			}, this);
 		}
 	}
-	function makeDebugCircle(tower){
-		tower.radius = new Phaser.Circle(tower.bulletStart.x(), tower.bulletStart.y(), tower.range);
-		game.debug.geom(tower.radius,'rgba(255, 255, 25, 0.7)');
+	function toggleRanges(currently_dragging){
+		if (currently_dragging){
+			for (x = 0; x<ranges.children.length; x++){
+			   ranges.children[x].frame = 0;
+			}
+		} else {
+			for (x = 0; x<ranges.children.length; x++){
+			   ranges.children[x].frame = 1;
+			}		
+		}
+	};
+	function makeTowerRadius(tower){
+		tower.radius = game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'range');
+		game.physics.enable(tower.radius, Phaser.Physics.ARCADE);
+		tower.radius.scale.x = tower.range;
+		tower.radius.scale.y = tower.range;
 		tower.radius.tower = tower;
-		ranges.add(tower.radius);
+        ranges.add(tower.radius);
 	}
 	function isPlacable(t) {
 		placable = true;
@@ -423,7 +442,7 @@
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.6;
-				tower.range = 210;
+				tower.range = 6.5;
 				tower.doesDamage = 0.7;
 				tower.center = { "x": 28, "y": 35 };
 				tower.bulletStart = { "x": function (){ return tower.x + 28 }, "y": function(){ return tower.y + 26 } };
@@ -435,19 +454,19 @@
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.9;
-				tower.range = 180;
+				tower.range = 4;
 				tower.doesDamage = 0.6;
 				tower.center = { "x": 27, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28 }, "y": function(){ return tower.y + 27 } };
 				tower.baseHeight = 24;
 				tower.baseWidth = 25;
 				tower.bullettype = 2;
-				tower.cost = 250;
+				tower.cost = 200;
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
 				tower.speed = 0.5;
-				tower.range = 300;
+				tower.range = 9;
 				tower.doesDamage = 1;
 				tower.center = { "x": 26, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20} };
@@ -458,6 +477,7 @@
 				break;
 			}
 		game.physics.enable(tower, Phaser.Physics.ARCADE);
+		makeTowerRadius(tower);
 		return tower;		
 	}
 	var Bullet = function(tower, enemy) {
