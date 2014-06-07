@@ -233,8 +233,8 @@
 			moneysymboldos.visible = false;
 		});
 	}
-	function isInRange(enemy, rand) {
-		alert("Is In Range");
+	function isInRange(enemy, range) {
+		shoot(range.tower, enemy);
 	}
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
@@ -294,8 +294,8 @@
 			being_dragged = Tower(tower.x, tower.y, tower.key);
 			marker = game.add.sprite(0, 0,'placableBox');
 			game.physics.enable(marker, Phaser.Physics.ARCADE);
-			marker.scale.x = being_dragged.baseWidth/marker.body.width
-			marker.scale.y = being_dragged.baseHeight/marker.body.height
+			marker.scale.x = being_dragged.baseWidth/marker.body.width;
+			marker.scale.y = being_dragged.baseHeight/marker.body.height;
 			game.input.onDown.add(function(){
 				if (placable==true && (game.input.x>190 || game.input.y>80)) {
 					if (game.input.mouse.event.button == 2) {
@@ -428,19 +428,15 @@
 		return placable;
 	}
 	function shoot(tower, enemy) {
-		var bullet;
-		switch(tower.bullettype) {
-			case 1:
-				bullet = game.add.sprite(tower.x, tower.y, 'bullet1');
-			break;
-			case 2:
-				bullet = game.add.sprite(tower.x, tower.y, 'bullet2');
-			break;
-			case 4:
-				bullet = game.add.sprite(tower.x, tower.y, 'bullet4');
-			break;
+		frame = 1;
+		var bullet = Bullet(tower, enemy, frame);
+		angle = game.physics.arcade.moveToObject(bullet, enemy, 500);
+		if (angle > 17.905 && angle < 25.7) {
+			bullet.frame = 0;
+		} else {
+			bullet.fram = 3;
 		}
-		//USE => this.game.physics.moveToObject(bullet, this.player, BULLETSPEED);
+
 	}
 	function enemyout(enemy) {
 		enemy.kill();
@@ -451,7 +447,7 @@
 		switch(key) {
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.speed = 0.6;
+				tower.attackSpeed = 0.6;
 				tower.range = 6.5;
 				tower.doesDamage = 0.7;
 				tower.center = { "x": 28, "y": 35 };
@@ -463,7 +459,7 @@
 				break;
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.speed = 0.9;
+				tower.attackSpeed = 0.9;
 				tower.range = 4;
 				tower.doesDamage = 0.6;
 				tower.center = { "x": 27, "y": 35 };
@@ -475,14 +471,14 @@
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.speed = 0.5;
+				tower.attackSpeed = 0.5;
 				tower.range = 9;
 				tower.doesDamage = 1;
 				tower.center = { "x": 26, "y": 35 };
-				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20} };
+				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20 } };
 				tower.baseHeight = 29;
 				tower.baseWidth = 36;
-				tower.bullettype = 4;
+				tower.bullettype = 3;
 				tower.cost = 525;
 				break;
 			}
@@ -490,20 +486,22 @@
 		makeTowerRadius(tower);
 		return tower;		
 	}
-	var Bullet = function(tower, enemy) {
+	var Bullet = function(tower, enemy, frame) {
 		var bullet;
 		switch(tower.bullettype) {
 			case 1:
-				bullet = this.game.add.sprite(tower.body.center.x, tower.body.center.y, 'bullet1');
+				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet1', frame);
 			break;
 			case 2:
-				bullet = this.game.add.sprite(tower.body.center.x, tower.body.center.y, 'bullet2');
+				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet3', frame);
 			break;
 			case 3:
-				bullet = this.game.add.sprite(tower.body.center.x, tower.body.center.y-10, 'bullet3');
+				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet2', frame);
 			break;
 		}
-
+		game.physics.enable(bullet, Phaser.Physics.ARCADE);
+		bullet.outOfBoundsKill = true;
+		return bullet;
 	}
 	var Path = function(x, y, type) {
 		var path;
