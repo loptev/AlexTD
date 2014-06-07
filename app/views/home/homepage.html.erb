@@ -32,6 +32,7 @@
 		currentmoney, moneysymbol, moneysymboldos, livessymbol,
 		currentmoneytext, dragtext, livestext,
 		tower1, tower2, tower3,
+		ctrlKey,
 		// Groups
 		detectors, paths, enemies, towers, markers, ranges,
 		enemystack = [], 
@@ -107,6 +108,7 @@
 		},
 		create: function() {
 			// Create Background and Map
+
 			game.physics.setBoundsToWorld();
 			game.add.sprite(0, 0, 'background');
 			map = game.add.tilemap('desert');
@@ -143,6 +145,7 @@
 			moneysymboldos = game.add.sprite(450, 4, 'money');
 			moneysymboldos.visible = false;
 			dragtext = this.game.add.text(200, 0, '');
+			ctrlKey = game.input.keyboard.addKey(17);
 		},
 		update: function() {
 			game.physics.arcade.collide(marker, ground);
@@ -175,7 +178,7 @@
 			}
 			this.currentmoneytext.text = currentmoney;
 			if (currentmoney < 100) {
-				moneysymbol.x = 725;
+				this.currentmoneytext.x = 715;
 			}
 			else if (currentmoney < 10000 && currentmoney > 999) {
 				moneysymbol.x = 755;
@@ -294,17 +297,22 @@
 			being_dragged = Tower(tower.x, tower.y, tower.key);
 			marker = game.add.sprite(0, 0,'placableBox');
 			game.physics.enable(marker, Phaser.Physics.ARCADE);
-			marker.scale.x = being_dragged.baseWidth/marker.body.width
-			marker.scale.y = being_dragged.baseHeight/marker.body.height
+			marker.scale.x = being_dragged.baseWidth/marker.body.width;
+			marker.scale.y = being_dragged.baseHeight/marker.body.height;
+			ctrlKey.onDown.add(function(){
+					being_dragged.radius.destroy();
+					being_dragged.destroy();
+					marker.destroy();
+					currently_dragging = false;
+					toggleRanges(false);
+					game.input.onDown.removeAll();
+			}, this);
 			game.input.onDown.add(function(){
 				if (placable==true && (game.input.x>190 || game.input.y>80)) {
-					if (game.input.mouse.event.button == 2) {
-						game.input.mouse.event.preventDefault();
-		    			being_dragged.destroy();
-		    		};
-		    		toggleRanges(false);
 					marker.destroy();
 					towers.add(being_dragged);
+					ranges.add(being_dragged.radius);
+					toggleRanges(false);
 					currently_dragging=false;
 					game.input.onDown.removeAll();		
 					currentmoney -= being_dragged.cost;		
@@ -329,7 +337,6 @@
 		tower.radius.scale.x = tower.range;
 		tower.radius.scale.y = tower.range;
 		tower.radius.tower = tower;
-        ranges.add(tower.radius);
 	}
 	function isPlacable(t) {
 		placable = true;
@@ -451,7 +458,7 @@
 		switch(key) {
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.speed = 0.6;
+				tower.attackspeed = 0.6;
 				tower.range = 6.5;
 				tower.doesDamage = 0.7;
 				tower.center = { "x": 28, "y": 35 };
@@ -463,7 +470,7 @@
 				break;
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.speed = 0.9;
+				tower.attackspeed = 0.9;
 				tower.range = 4;
 				tower.doesDamage = 0.6;
 				tower.center = { "x": 27, "y": 35 };
@@ -475,7 +482,7 @@
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.speed = 0.5;
+				tower.attackspeed = 0.5;
 				tower.range = 9;
 				tower.doesDamage = 1;
 				tower.center = { "x": 26, "y": 35 };
@@ -556,29 +563,21 @@
 		switch(type) {
 			case 1: enemy = this.game.add.sprite(centerx, centery, 'badguy1');
 				enemy.speed = 75;
+				enemy.worth = 25;
 				break;
 			case 2: enemy = this.game.add.sprite(centerx, centery, 'badguy2');
 				enemy.speed = 100;
+				enemy.worth = 50;
 				break;
 			case 3: enemy = this.game.add.sprite(centerx, centery, 'badguy3');
 				enemy.speed = 50;
+				enemy.worth = 100;
 				break;
 		}
 		game.physics.enable(enemy, Phaser.Physics.ARCADE);
 		enemy.checkWorldBounds = true;
 		enemy.events.onOutOfBounds.add(enemyout, this );
-		//enemy.outOfBoundsKill = true;
 		enemy.direction = null;
-		
-		// enemy.events.onKilled.add(function() {
-		// 	console.log('this 1st thing happened');
-		// 	if (enemy.x > 790) {
-		// 		console.log('this happened');
-		// 		lives = lives-1;
-		// 		console.log('this other thing happened');
-		// 	}
-		// 	console.log('this last thing happened');
-		// });
 		enemies.add(enemy);
 		return enemy;
 	}
