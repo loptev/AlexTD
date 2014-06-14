@@ -34,7 +34,7 @@
 		tower1, tower2, tower3,
 		ctrlKey,
 		// Groups
-		detectors, paths, enemies, towers, markers, ranges,
+		detectors, paths, enemies, towers, markers, ranges, bullets,
 		enemystack = [], 
 		counter = 100,
 		startwave, startwavebutton, wave = 0;
@@ -121,6 +121,8 @@
 			detectors.enableBody = true;
 			ranges = game.add.group();
 			ranges.enableBody = true;
+			bullets = game.add.group();
+			bullets.enableBody = true;
 			map.createFromObjects('detectors', 4, 'detector', 0, true, false, detectors);
 			markers = game.add.group();
 
@@ -176,6 +178,10 @@
 					startwave = false;
 				}
 			}
+			for (bullet in bullets.children) {
+				recalibrateBullets(bullets.children[bullet]);
+			}
+			// Money offset to side
 			this.currentmoneytext.text = currentmoney;
 			if (currentmoney < 100) {
 				this.currentmoneytext.x = 715;
@@ -237,7 +243,9 @@
 		});
 	}
 	function isInRange(enemy, range) {
-		shoot(range.tower, enemy);
+		if (!range.tower.inCoolDownMode){
+			shoot(range.tower, enemy);
+		}
 	}
 	function isEnemyInCenter(enemy, detector) {
 		if (enemy.direction == "left" && typeof detector["left"] !== "undefined") {
@@ -434,15 +442,37 @@
 		};
 		return placable;
 	}
+	function recalibrateBullets(bullet){
+		game.physics.arcade.moveToObject(bullet, bullet.target);
+	}
 	function shoot(tower, enemy) {
 		frame = 1;
 		var bullet = Bullet(tower, enemy, frame);
+		bullet.target = enemy;
+		// var distance = Math.abs(Math.sqrt(Math.pow((tower.world.x - enemy.world.x),2) + Math.pow((tower.world.y - enemy.world.y),2)));
+		// var offsetX = distance<=100 ? 0 : distance/120 * enemy.body.velocity.x;
+		// var offsetY = distance<=100 ? 0 : distance/120 * enemy.body.velocity.y;
 		angle = game.physics.arcade.moveToObject(bullet, enemy, 500);
 		if (angle > 17.905 && angle < 25.7) {
 			bullet.frame = 0;
 		} else {
-			bullet.fram = 3;
+			bullet.frame = 3;
 		}
+		tower.inCoolDownMode = true;
+		timer = game.time.create(true);
+
+	    //  Set a TimerEvent to occur after 2 seconds
+	    timer.add((1000/tower.attackSpeed), function(){
+	    	tower.inCoolDownMode = false;
+	    }, this);
+
+	    //  Start the timer running - this is important!
+	    //  It won't start automatically, allowing you to hook it to button events and the like.
+	    timer.start();
+
+		// game.time.events.add(Phaser.Timer.SECOND/tower.attackSpeed , function(){
+		// 	tower.inCoolDownMode = false;
+		// }, tower);
 
 	}
 	function enemyout(enemy) {
@@ -454,7 +484,7 @@
 		switch(key) {
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.attackSpeed = 0.6;
+				tower.attackSpeed = 1.6;
 				tower.range = 6.5;
 				tower.doesDamage = 0.7;
 				tower.center = { "x": 28, "y": 35 };
@@ -466,7 +496,7 @@
 				break;
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.attackspeed = 0.9;
+				tower.attackSpeed = 1.9;
 				tower.range = 4;
 				tower.doesDamage = 0.6;
 				tower.center = { "x": 27, "y": 35 };
@@ -478,7 +508,7 @@
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.attackspeed = 0.5;
+				tower.attackSpeed = 1.5;
 				tower.range = 9;
 				tower.doesDamage = 1;
 				tower.center = { "x": 26, "y": 35 };
@@ -489,6 +519,7 @@
 				tower.cost = 525;
 				break;
 			}
+		tower.inCoolDownTime = false;
 		game.physics.enable(tower, Phaser.Physics.ARCADE);
 		makeTowerRadius(tower);
 		return tower;		
@@ -508,6 +539,7 @@
 		}
 		game.physics.enable(bullet, Phaser.Physics.ARCADE);
 		bullet.outOfBoundsKill = true;
+		bullets.add(bullet);
 		return bullet;
 	}
 	var Path = function(x, y, type) {
