@@ -25,14 +25,14 @@
 <%= javascript_include_tag "phaser.min.js" %>
 <script type="text/javascript">
 	var level_data,
-		tile, map, lives,
+		tile, map, lives, score = 0,
 		ground, marker, placable,
-		currently_dragging, being_dragged,
-		startmoney = 400, 
+		currently_dragging, being_dragged, justplaced,
+		startmoney = 400, sellbutton,
 		currentmoney, moneysymbol, moneysymboldos, livessymbol,
-		currentmoneytext, dragtext, livestext,
+		currentmoneytext, dragtext, livestext, scoretext,
 		tower1, tower2, tower3,
-		ctrlKey,
+		ctrlKey, escKey, hasBeenHere,
 		// Groups
 		detectors, paths, enemies, towers, markers, ranges, bullets,
 		enemystack = [], 
@@ -58,16 +58,17 @@
 			game.load.image('badguy1', '<%= asset_path('badguy1.png') %>');
 			game.load.image('badguy2', '<%= asset_path('badguy2.png') %>');
 			game.load.image('badguy3', '<%= asset_path('badguy3.png') %>');
+			game.load.spritesheet('sellbutton', '<%= asset_path('sellbutton.png') %>', 50, 38, 2);
 			game.load.spritesheet('tower1', '<%= asset_path('towerspritesheet1.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower2', '<%= asset_path('towerspritesheet2.png') %>', 56, 56, 8);
 			game.load.spritesheet('tower3', '<%= asset_path('towerspritesheet3.png') %>', 56, 56, 8);
 			game.load.spritesheet('placableBox','<%= asset_path('placableBox.png') %>', 35, 35, 2);
 			game.load.spritesheet('range', '<%= asset_path('range.png') %>', 35, 35, 2);
-			game.load.spritesheet('bullet1', '<%= asset_path('Bullet1.png') %>', 10, 10, 9);
+			game.load.spritesheet('bullet1', '<%= asset_path('Bullet1.png') %>', 10, 10, 9); //goes with tower 1
 			game.load.spritesheet('bullet2', '<%= asset_path('Bullet2.png') %>', 10, 10, 9);
 			//Bullet2 does not go with a tower
-			game.load.spritesheet('bullet3', '<%= asset_path('Bullet3.png') %>', 10, 10, 9);
-			game.load.spritesheet('bullet4', '<%= asset_path('Bullet4.png') %>', 10, 10, 9);
+			game.load.spritesheet('bullet3', '<%= asset_path('Bullet3.png') %>', 10, 10, 9);//goes with tower 2
+			game.load.spritesheet('bullet4', '<%= asset_path('Bullet4.png') %>', 10, 10, 9);//goes with tower 3
 		},
 		create: function() {
 			console.log("Preload State Started");
@@ -147,7 +148,9 @@
 			moneysymboldos = game.add.sprite(450, 4, 'money');
 			moneysymboldos.visible = false;
 			dragtext = this.game.add.text(200, 0, '');
+			scoretext = game.add.text(0, 570, 'Score: ' + score);
 			ctrlKey = game.input.keyboard.addKey(17);
+			escKey = game.input.keyboard.addKey(27);
 		},
 		update: function() {
 			game.physics.arcade.collide(marker, ground);
@@ -189,9 +192,31 @@
 			else if (currentmoney < 10000 && currentmoney > 999) {
 				moneysymbol.x = 755;
 			}
+			else if (currentmoney > 99 && currentmoney < 1000) {
+				this.currentmoneytext.x = 700;
+			}
 			livestext.text = lives;
-		}
+			scoretext.score = 'Score: ' + score;
+			}
 	};
+	function sellMode(tower) {
+		currently_dragging = false;
+		if (tower != tower1 && tower != tower2 && tower != tower3) {
+			tower.range.frame = 0;
+			hasBeenHere = true;
+			sellbutton = game.add.button(tower.x - 22, tower.y + 9, 'sellbutton', function() {
+				currentmoney += tower.cost/2;
+				towers.remove(tower);
+				ranges.remove(tower.radius);
+				tower.destroy();
+				sellbutton.destroy();
+			}, this, 1, 0);
+			escKey.onDown.add(function() {
+				tower.range.frame = 1;
+				sellbutton.destroy();
+			}, this);
+		}
+	}
 	function setuplvl(lvl) {
 		$.getJSON('<%= asset_path('levels.json') %>', function(data) {
 			level_data = data[lvl];
@@ -308,24 +333,32 @@
 			marker.scale.x = being_dragged.baseWidth/marker.body.width;
 			marker.scale.y = being_dragged.baseHeight/marker.body.height;
 			ctrlKey.onDown.add(function(){
+				if (currently_dragging == true) {
+					if (hasBeenHere) {
+						sellbutton.destroy();
+					}
 					being_dragged.radius.destroy();
 					being_dragged.destroy();
 					marker.destroy();
 					currently_dragging = false;
 					toggleRanges(false);
-					game.input.onDown.removeAll();
+					
+				}
 			}, this);
-			game.input.onDown.add(function(){
-				if (placable==true && (game.input.x>190 || game.input.y>80)) {
+			var placeTower = function(){
+				if (placable==true && (game.input.x>190 || game.input.y>80) && currently_dragging == true) {
 					marker.destroy();
 					towers.add(being_dragged);
 					ranges.add(being_dragged.radius);
 					toggleRanges(false);
 					currently_dragging=false;
 					game.input.onDown.removeAll();		
-					currentmoney -= being_dragged.cost;		
+					currentmoney -= being_dragged.cost;	
+					justplaced = true;	
+					sellbutton.destroy();
 				}
-			}, this);
+			};
+			game.input.onDown.add(placeTower, this);
 		}
 	}
 	function toggleRanges(currently_dragging){
@@ -486,7 +519,7 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.attackSpeed = 1.6;
 				tower.range = 6.5;
-				tower.doesDamage = 0.7;
+				tower.doesDamage = 65;
 				tower.center = { "x": 28, "y": 35 };
 				tower.bulletStart = { "x": function (){ return tower.x + 28 }, "y": function(){ return tower.y + 26 } };
 				tower.baseHeight = 33;
@@ -498,7 +531,7 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.attackSpeed = 1.9;
 				tower.range = 4;
-				tower.doesDamage = 0.6;
+				tower.doesDamage = 40;
 				tower.center = { "x": 27, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28 }, "y": function(){ return tower.y + 27 } };
 				tower.baseHeight = 24;
@@ -510,7 +543,7 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.attackSpeed = 1.5;
 				tower.range = 9;
-				tower.doesDamage = 1;
+				tower.doesDamage = 99;
 				tower.center = { "x": 26, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20 } };
 				tower.baseHeight = 29;
@@ -522,6 +555,8 @@
 		tower.inCoolDownTime = false;
 		game.physics.enable(tower, Phaser.Physics.ARCADE);
 		makeTowerRadius(tower);
+		tower.inputEnabled = true;
+		tower.events.onInputDown.add(sellMode, this);
 		return tower;		
 	}
 	var Bullet = function(tower, enemy, frame) {
@@ -593,15 +628,21 @@
 		switch(type) {
 			case 1: enemy = this.game.add.sprite(centerx, centery, 'badguy1');
 				enemy.speed = 75;
-				enemy.worth = 25;
+				enemy.health = 50;
+				enemy.worth = 50;
+				enemy.score = 100;
 				break;
 			case 2: enemy = this.game.add.sprite(centerx, centery, 'badguy2');
 				enemy.speed = 100;
-				enemy.worth = 50;
+				enemy.health = 100;
+				enemy.worth = 100;
+				enemy.score = 150;
 				break;
 			case 3: enemy = this.game.add.sprite(centerx, centery, 'badguy3');
 				enemy.speed = 50;
-				enemy.worth = 100;
+				enemy.health = 300;
+				enemy.worth = 200;
+				enemy.score = 250;
 				break;
 		}
 		game.physics.enable(enemy, Phaser.Physics.ARCADE);
