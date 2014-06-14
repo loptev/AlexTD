@@ -524,7 +524,7 @@
 		switch(key) {
 			case 'tower1': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.attackSpeed = 1.6;
+				tower.attackSpeed = 1;
 				tower.range = 6.5;
 				tower.doesDamage = 65;
 				tower.center = { "x": 28, "y": 35 };
@@ -536,7 +536,7 @@
 				break;
 			case 'tower2': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.attackSpeed = 1.9;
+				tower.attackSpeed = 1.6;
 				tower.range = 4;
 				tower.doesDamage = 40;
 				tower.center = { "x": 27, "y": 35 };
@@ -548,9 +548,9 @@
 				break;
 			case 'tower3': 
 				tower = this.game.add.sprite(x, y, key);
-				tower.attackSpeed = 1.5;
+				tower.attackSpeed = 0.6;
 				tower.range = 9;
-				tower.doesDamage = 99;
+				tower.doesDamage = 159;
 				tower.center = { "x": 26, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20 } };
 				tower.baseHeight = 29;
@@ -576,7 +576,7 @@
 				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet3', frame);
 			break;
 			case 3:
-				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet2', frame);
+				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet4', frame);
 			break;
 		}
 		bullet.target = enemy;
