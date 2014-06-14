@@ -166,6 +166,7 @@
 			};
 			game.physics.arcade.overlap(enemies, ranges, isInRange, null, this);
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
+			game.physics.arcade.overlap(bullets, enemies, killEnemy, null, this);
 			if (startwave) {
 				if (enemystack.length > 0) {
 					if (counter >= 100) {
@@ -506,6 +507,13 @@
 		// 	tower.inCoolDownMode = false;
 		// }, tower);
 
+	}
+	function killEnemy(bullet, enemy) {
+		bullet.destroy;
+		score += enemy.score;
+		currentmoney += enemy.worth;
+		enemy.kill();
+		bullet.kill();
 	}
 	function enemyout(enemy) {
 		enemy.kill();
