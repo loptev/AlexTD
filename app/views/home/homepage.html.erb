@@ -202,7 +202,7 @@
 	function sellMode(tower) {
 		currently_dragging = false;
 		if (tower != tower1 && tower != tower2 && tower != tower3) {
-			tower.range.frame = 0;
+			tower.radius.frame = 0;
 			hasBeenHere = true;
 			sellbutton = game.add.button(tower.x - 22, tower.y + 9, 'sellbutton', function() {
 				currentmoney += tower.cost/2;
@@ -212,7 +212,7 @@
 				sellbutton.destroy();
 			}, this, 1, 0);
 			escKey.onDown.add(function() {
-				tower.range.frame = 1;
+				tower.radius.frame = 1;
 				sellbutton.destroy();
 			}, this);
 		}
@@ -476,16 +476,15 @@
 		return placable;
 	}
 	function recalibrateBullets(bullet){
-		game.physics.arcade.moveToObject(bullet, bullet.target);
+		game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
 	}
 	function shoot(tower, enemy) {
 		frame = 1;
 		var bullet = Bullet(tower, enemy, frame);
-		bullet.target = enemy;
 		// var distance = Math.abs(Math.sqrt(Math.pow((tower.world.x - enemy.world.x),2) + Math.pow((tower.world.y - enemy.world.y),2)));
 		// var offsetX = distance<=100 ? 0 : distance/120 * enemy.body.velocity.x;
 		// var offsetY = distance<=100 ? 0 : distance/120 * enemy.body.velocity.y;
-		angle = game.physics.arcade.moveToObject(bullet, enemy, 500);
+		angle = game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
 		if (angle > 17.905 && angle < 25.7) {
 			bullet.frame = 0;
 		} else {
@@ -572,6 +571,7 @@
 				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet2', frame);
 			break;
 		}
+		bullet.target = enemy;
 		game.physics.enable(bullet, Phaser.Physics.ARCADE);
 		bullet.outOfBoundsKill = true;
 		bullets.add(bullet);
