@@ -182,10 +182,15 @@
 					startwave = false;
 				}
 			}
+			for (var enemy=0; enemy < enemies.children.length; enemy++) {
+				var enemy = enemies.children[enemy];
+				enemy.hpBar.x = enemy.world.x;
+				enemy.hpBar.y = enemy.world.y;
+				game.debug.geom(enemy.hpBar,'#99FF33');
+			}
 			for (var bullet=0; bullet < bullets.children.length; bullet++) {
 				var bullet = bullets.children[bullet];
 				if (game.physics.arcade.overlap(bullet, enemies, function(){
-					console.log("enemy health 1: " + bullet.target.health);
 					killEnemy(bullet, bullet.target);
 				}
 					)){
@@ -485,22 +490,15 @@
 		return placable;
 	}
 	function recalibrateBullets(bullet){
-		if (bullet.target.exists){
+		if (bullet.target !== null) {
 			game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
 		}
 	}
 	function shoot(tower, enemy) {
 		frame = 1;
 		var bullet = Bullet(tower, enemy, frame);
-		// var distance = Math.abs(Math.sqrt(Math.pow((tower.world.x - enemy.world.x),2) + Math.pow((tower.world.y - enemy.world.y),2)));
-		// var offsetX = distance<=100 ? 0 : distance/120 * enemy.body.velocity.x;
-		// var offsetY = distance<=100 ? 0 : distance/120 * enemy.body.velocity.y;
-		angle = game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
-		if (angle > 17.905 && angle < 25.7) {
-			bullet.frame = 0;
-		} else {
-			bullet.frame = 3;
-		}
+		game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
+		bullet.frame = frame;
 		tower.inCoolDownMode = true;
 		timer = game.time.create(true);
 
@@ -508,28 +506,17 @@
 	    timer.add((1000/tower.attackSpeed), function(){
 	    	tower.inCoolDownMode = false;
 	    }, this);
-
-	    //  Start the timer running - this is important!
-	    //  It won't start automatically, allowing you to hook it to button events and the like.
 	    timer.start();
-
-		// game.time.events.add(Phaser.Timer.SECOND/tower.attackSpeed , function(){
-		// 	tower.inCoolDownMode = false;
-		// }, tower);
-
 	}
 	function killEnemy(bullet, enemy) {
-		console.log("enemy health 2: " + enemy.health);
-		console.log("bullet damage: " + bullet.damage);
-		enemy.health = enemy.health - bullet.damage;
-		console.log("enemy health 3: " + enemy.health);
+		enemy.hp -= bullet.damage;
 		bullet.destroy();
-		if (enemy.health <= 0) {
+		enemy.hpBar = new Phaser.Rectangle(enemy.x, enemy.y, (enemy.hp/enemy.fullHP)*45, 8);
+		if (enemy.hp <= 0) {
 			score += enemy.score;
 			currentmoney += enemy.worth;
 			enemy.destroy();
 		}
-		console.log("enemy health 3: " + enemy.health);
 	}
 	function enemyout(enemy) {
 		enemy.destroy();
@@ -652,19 +639,22 @@
 		switch(type) {
 			case 1: enemy = this.game.add.sprite(centerx, centery, 'badguy1');
 				enemy.speed = 75*2;
-				enemy.health = 50;
+				enemy.hp = 100;
+				enemy.fullHP = enemy.hp;				
 				enemy.worth = 50;
 				enemy.score = 100;
 				break;
 			case 2: enemy = this.game.add.sprite(centerx, centery, 'badguy2');
 				enemy.speed = 100*2;
-				enemy.health = 100;
+				enemy.hp = 220;
+				enemy.fullHP = enemy.hp;				
 				enemy.worth = 100;
 				enemy.score = 150;
 				break;
 			case 3: enemy = this.game.add.sprite(centerx, centery, 'badguy3');
 				enemy.speed = 50*2;
-				enemy.health = 300;
+				enemy.hp = 400;
+				enemy.fullHP = enemy.hp;				
 				enemy.worth = 200;
 				enemy.score = 250;
 				break;
@@ -673,6 +663,8 @@
 		enemy.checkWorldBounds = true;
 		enemy.events.onOutOfBounds.add(enemyout, this );
 		enemy.direction = null;
+		// Create Health Bar
+		enemy.hpBar = new Phaser.Rectangle(enemy.x, enemy.y, 45, 8);
 		enemies.add(enemy);
 		return enemy;
 	}
