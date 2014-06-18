@@ -141,13 +141,13 @@
 
 			currentmoney = startmoney;
 			lives = 30-(this.level*5);
-			this.currentmoneytext = this.game.add.text(700, 0, currentmoney);
-			livestext = this.game.add.text(715, 30, lives);
+			currentmoneytext = game.add.text(700, 0, currentmoney);
+			livestext = game.add.text(715, 30, lives);
 			moneysymbol = game.add.sprite(740, 4, 'money');
 			livessymbol = game.add.sprite(742, 34, 'lifeheart');
 			moneysymboldos = game.add.sprite(450, 4, 'money');
 			moneysymboldos.visible = false;
-			dragtext = this.game.add.text(200, 0, '');
+			dragtext = game.add.text(200, 0, '');
 			scoretext = game.add.text(0, 570, 'Score: ' + score);
 			ctrlKey = game.input.keyboard.addKey(17);
 			escKey = game.input.keyboard.addKey(27);
@@ -166,7 +166,7 @@
 			};
 			game.physics.arcade.overlap(enemies, ranges, isInRange, null, this);
 			game.physics.arcade.overlap(enemies, detectors, isEnemyInCenter, null, this);
-			game.physics.arcade.overlap(bullets, enemies, killEnemy, null, this);
+			// game.physics.arcade.overlap(bullets, enemies, killEnemy, null, this);
 			if (startwave) {
 				if (enemystack.length > 0) {
 					if (counter >= 100) {
@@ -182,22 +182,30 @@
 					startwave = false;
 				}
 			}
-			for (bullet in bullets.children) {
-				recalibrateBullets(bullets.children[bullet]);
+			for (var bullet=0; bullet < bullets.children.length; bullet++) {
+				var bullet = bullets.children[bullet];
+				if (game.physics.arcade.overlap(bullet, enemies, function(){
+					console.log("enemy health 1: " + bullet.target.health);
+					killEnemy(bullet, bullet.target);
+				}
+					)){
+				} else {
+					recalibrateBullets(bullet);
+				}
 			}
 			// Money offset to side
-			this.currentmoneytext.text = currentmoney;
+			currentmoneytext.text = currentmoney;
 			if (currentmoney < 100) {
-				this.currentmoneytext.x = 715;
+				currentmoneytext.x = 715;
 			}
 			else if (currentmoney < 10000 && currentmoney > 999) {
 				moneysymbol.x = 755;
 			}
 			else if (currentmoney > 99 && currentmoney < 1000) {
-				this.currentmoneytext.x = 700;
+				currentmoneytext.x = 700;
 			}
 			livestext.text = lives;
-			scoretext.score = 'Score: ' + score;
+			scoretext.text = 'Score: ' + score;
 			}
 	};
 	function sellMode(tower) {
@@ -477,7 +485,9 @@
 		return placable;
 	}
 	function recalibrateBullets(bullet){
-		game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
+		if (bullet.target.exists){
+			game.physics.arcade.moveToXY(bullet, bullet.target.body.center.x, bullet.target.body.center.y, 500);
+		}
 	}
 	function shoot(tower, enemy) {
 		frame = 1;
@@ -509,14 +519,20 @@
 
 	}
 	function killEnemy(bullet, enemy) {
-		bullet.destroy;
-		score += enemy.score;
-		currentmoney += enemy.worth;
-		enemy.kill();
-		bullet.kill();
+		console.log("enemy health 2: " + enemy.health);
+		console.log("bullet damage: " + bullet.damage);
+		enemy.health = enemy.health - bullet.damage;
+		console.log("enemy health 3: " + enemy.health);
+		bullet.destroy();
+		if (enemy.health <= 0) {
+			score += enemy.score;
+			currentmoney += enemy.worth;
+			enemy.destroy();
+		}
+		console.log("enemy health 3: " + enemy.health);
 	}
 	function enemyout(enemy) {
-		enemy.kill();
+		enemy.destroy();
 		lives = lives-1;
 	}
 	var Tower = function(x, y, key) {
@@ -526,7 +542,6 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.attackSpeed = 1;
 				tower.range = 6.5;
-				tower.doesDamage = 65;
 				tower.center = { "x": 28, "y": 35 };
 				tower.bulletStart = { "x": function (){ return tower.x + 28 }, "y": function(){ return tower.y + 26 } };
 				tower.baseHeight = 33;
@@ -538,7 +553,6 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.attackSpeed = 1.6;
 				tower.range = 4;
-				tower.doesDamage = 40;
 				tower.center = { "x": 27, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28 }, "y": function(){ return tower.y + 27 } };
 				tower.baseHeight = 24;
@@ -550,7 +564,6 @@
 				tower = this.game.add.sprite(x, y, key);
 				tower.attackSpeed = 0.6;
 				tower.range = 9;
-				tower.doesDamage = 159;
 				tower.center = { "x": 26, "y": 35 };
 				tower.bulletStart = { "x": function(){ return tower.x + 28}, "y": function(){ return tower.y + 20 } };
 				tower.baseHeight = 29;
@@ -571,12 +584,15 @@
 		switch(tower.bullettype) {
 			case 1:
 				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet1', frame);
+				bullet.damage = 45;
 			break;
 			case 2:
 				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet3', frame);
+				bullet.damage = 20;
 			break;
 			case 3:
 				bullet = this.game.add.sprite(tower.bulletStart.x(), tower.bulletStart.y(), 'bullet4', frame);
+				bullet.damage = 110;
 			break;
 		}
 		bullet.target = enemy;
@@ -635,19 +651,19 @@
 		var enemy;
 		switch(type) {
 			case 1: enemy = this.game.add.sprite(centerx, centery, 'badguy1');
-				enemy.speed = 75;
+				enemy.speed = 75*2;
 				enemy.health = 50;
 				enemy.worth = 50;
 				enemy.score = 100;
 				break;
 			case 2: enemy = this.game.add.sprite(centerx, centery, 'badguy2');
-				enemy.speed = 100;
+				enemy.speed = 100*2;
 				enemy.health = 100;
 				enemy.worth = 100;
 				enemy.score = 150;
 				break;
 			case 3: enemy = this.game.add.sprite(centerx, centery, 'badguy3');
-				enemy.speed = 50;
+				enemy.speed = 50*2;
 				enemy.health = 300;
 				enemy.worth = 200;
 				enemy.score = 250;
